@@ -26,14 +26,14 @@ for voice in voices:
 engine.setProperty('rate', 190)
 
 # Получаем html шаблон для сообщений в окне чата
-htmlcode = '<div class="robot">Чем я могу помочь?</div>'
+html_code = '<div class="robot">Чем я могу помочь?</div>'
 f = open('index.html', 'r', encoding='UTF-8')
-htmltemplate = f.read()
+html_template = f.read()
 f.close()
 
 # Получаем html шаблон help
 f = open('help.html', 'r', encoding='UTF-8')
-htmlcode2 = f.read()
+html_code_2 = f.read()
 f.close()
 
 
@@ -59,10 +59,10 @@ def ai_message(s):
         return 'Я Вас не совсем поняла!'
 
 
-otvet = ''
+answer = ''
 listen = ''
-vopros = ''
-dontlisten = ''
+request = ''
+not_listen = ''
 ispeak = ''
 
 # Объявляем распознавалку речи от Google
@@ -92,8 +92,8 @@ def interrupt_callback():
 @thread
 def listencommand():
     global listen
-    global vopros
-    global dontlisten
+    global request
+    global not_listen
     # Следим за состоянием ассистента - слушает она или говорит
     listen.emit([1])
     # Слушаем микрофон
@@ -149,9 +149,9 @@ class W(QMainWindow):
         self.browser.setGeometry(QtCore.QRect(2, 305, 400, 300))
         self.browser2.setGeometry(QtCore.QRect(405, 2, 930, 603))
         # Загружаем в QWebEngineView html документ с чатом
-        global htmltemplate
-        global htmlcode
-        global htmlcode2
+        global html_template
+        global html_code
+        global html_code_2
         htmlresult=htmltemplate.replace('%code%',htmlcode)
         self.browser.setHtml(htmlresult, QtCore.QUrl("file://"))
         self.browser.show()
@@ -159,13 +159,13 @@ class W(QMainWindow):
         self.browser2.show()  
         self.label.setText("<center><img src='file:///"+os.getcwd()+"/img/5.jpg'></center>")
         # Соединяем сигналы и функции класса
-        global otvet
+        global answer
         otvet=self.my_signal
         global listen
         listen=self.my_listen
-        global dontlisten
+        global not_listen
         dontlisten=self.my_dontlisten
-        global vopros
+        global request
         vopros=self.my_vopros
         self.my_listen.connect(self.mylisten, QtCore.Qt.QueuedConnection)
         self.my_vopros.connect(self.myvopros, QtCore.Qt.QueuedConnection)
@@ -190,8 +190,8 @@ class W(QMainWindow):
 
     # Добавление в html чат фразы ассистента
     def addrobotphrasetohtml(self, phrase):
-        global htmltemplate
-        global htmlcode
+        global html_template
+        global html_code
         htmlcode = '<div class="robot">'+phrase+'</div>'+htmlcode
         htmlresult = htmltemplate.replace('%code%',htmlcode)
         self.browser.setHtml(htmlresult, QtCore.QUrl("file://"))
@@ -199,8 +199,8 @@ class W(QMainWindow):
 
     # Добавление в html чат фразы пользователя
     def addyouphrasetohtml(self, phrase):
-        global htmltemplate
-        global htmlcode
+        global html_template
+        global html_code
         htmlcode = '<div class="you">'+phrase+'</div>'+htmlcode
         htmlresult = htmltemplate.replace('%code%',htmlcode)
         self.browser.setHtml(htmlresult, QtCore.QUrl("file://"))

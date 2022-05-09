@@ -6,12 +6,11 @@ import subprocess
 from urllib import request
 from urllib.parse import quote
 import urllib.request
-#import html2text
 
 
 # Чистит фразу от ключевых слов
-def cleanphrase(statement, spisok):
-    for x in spisok:
+def clean_phrase(statement, words_list):
+    for x in words_list:
         statement = statement.replace(x, '')
     statement = statement.strip()
     return statement
@@ -29,47 +28,47 @@ def anekdot():
 
 
 # Открыть сайт во внешнем браузере
-def openurl(url):
+def open_url(url):
     webbrowser.open(url)
 
 
 # Запускает внешнюю команду ОС
-def osrun(cmd):
+def os_run(cmd):
     PIPE = subprocess.PIPE
     p = subprocess.Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=subprocess.STDOUT)
 
 
-def zapusti(statement):
-    ot = 'Такой команды я пока не знаю'
-    statement = cleanphrase(statement, ['запусти', 'запустить'])
+def start_application(statement):
+    answer = 'Такой команды я пока не знаю'
+    statement = clean_phrase(statement, ['запусти', 'запустить'])
     if (statement.find("калькулятор") != -1) or (statement.find("calculator") != -1):
-        osrun('calc')
-        ot = 'Калькулятор запущен'
+        os_run('calc')
+        answer = 'Калькулятор запущен'
     if (statement.find("блокнот") != -1) or (statement.find("notepad") != -1):
-        osrun('notepad')
-        ot = 'Блокнот запущен'
-    if (statement.find("paint") !=- 1) or (statement.find("паинт") != -1):
-        osrun('mspaint')
-        ot = 'Графический редактор запущен'
+        os_run('notepad')
+        answer = 'Блокнот запущен'
+    if (statement.find("paint") != -1) or (statement.find("паинт") != -1):
+        os_run('mspaint')
+        answer = 'Графический редактор запущен'
     if (statement.find("browser") != -1) or (statement.find("браузер") != -1):
-        openurl('http://google.ru')
-        ot = 'Запускаю браузер'
+        open_url('http://google.ru')
+        answer = 'Запускаю браузер'
     if (statement.find("проводник") != -1) or (statement.find("файловый менеджер") != -1):
-        osrun('explorer')
-        ot = 'Проводник запущен'
-    return ot
+        os_run('explorer')
+        answer = 'Проводник запущен'
+    return answer
 
 
 # Даёт iframe код ютуб ролика по любому поисковому запросу    
-def findyoutube(x):
-    x = cleanphrase(x, ['хочу', 'на ютубе', 'на ютюбе', 'на ютуб', 'ютюб', 'на youtube', 'на you tube', 'на youtub', 'youtube', 'ютуб', 'ютубе', 'посмотреть', 'смотреть'])
+def find_on_tube(phrase):
+    phrase = clean_phrase(phrase, ['хочу', 'на ютубе', 'на ютюбе', 'на ютуб', 'ютюб', 'на youtube', 'на you tube', 'на youtub', 'youtube', 'ютуб', 'ютубе', 'посмотреть', 'смотреть'])
     zz = []
-    sq = 'http://www.youtube.com/results?search_query='+quote(x)
+    sq = 'http://www.youtube.com/results?search_query='+quote(phrase)
     doc = urllib.request.urlopen(sq).read().decode('cp1251', errors='ignore')
     match = re.findall(r"\?v\=(.+?)\"", doc)
     if not(match is None):
         for ii in match:
-            if len(ii)<25:
+            if len(ii) < 25:
                 zz.append(ii)
     zz2 = dict(zip(zz, zz)).values()
     zz3 = []
@@ -80,17 +79,17 @@ def findyoutube(x):
     return s
 
 
-def mysearch(z):
+def browser_search(z):
     doc = urllib.request.urlopen('http://go.mail.ru/search?fm=1&q='+quote(z)).read().decode('unicode-escape', errors = 'ignore')
     sp = re.compile('title":"(.*?)orig').findall(doc)
     mas1 = []
     mas2 = []
     for x in sp:
         if (x.rfind('wikihow') == -1) and (x.rfind('an.yandex') == -1) and (x.rfind('wikipedia') == -1) and (x.rfind('otvet.mail.ru') == -1) and (x.rfind('youtube')==-1) and(x.rfind('.jpg')==-1) and (x.rfind('.png')==-1) and (x.rfind('.gif')==-1):
-            a = x.replace(',','')
-            a = a.replace('"','')
-            a = a.replace('<b>','')
-            a = a.replace('</b>','')
+            a = x.replace(',', '')
+            a = a.replace('"', '')
+            a = a.replace('<b>', '')
+            a = a.replace('</b>', '')
             a = a.split('url:')
             if len(a) > 1:
                 z = a[0].split('}')

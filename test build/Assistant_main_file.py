@@ -12,29 +12,34 @@ import apiai
 import Assistant_functions
 
 
-# Инициализируем SAPI5
-engine = pyttsx3.init()
-# Получаем список голосов
-voices = engine.getProperty('voices')
-# Устанавливаем русский язык
-engine.setProperty('voice', 'ru')
-# Скорость чтения
-engine.setProperty('rate', 200)
+engine = pyttsx3.init()    # Initialize SAPI5
+voices = engine.getProperty('voices')    # Get a list of available votes
+engine.setProperty('voice', 'ru')    # Set the Russian language
+engine.setProperty('rate', 200)    # Set voice speed
 
-# Получаем html шаблон для сообщений в окне чата
+for voice in voices:    # Select the desired voice
+    if voice.name == 'Elena':
+        engine.setProperty('voice', voice.id)
+
+# Get the html page for messages in the chat window
 html_code = '<div class="robot">Чем я могу помочь?</div>'
 file = open('chat.html', 'r', encoding='UTF-8')
 html_template = file.read()
 file.close()
 
-# Получаем html шаблон help
-file = open('help.html', 'r', encoding='UTF-8')
+# Get the html page feature_list
+file = open('feature_list.html', 'r', encoding='UTF-8')
 html_code_2 = file.read()
 file.close()
 
 
-# Функция, которая обращается к Dialogflow и получает ответ
 def ai_message(s):
+    """
+    A function that calls Dialogflow and receives a response
+
+    :param s:
+    :return:
+    """
     # Токен API к Dialogflow (оставьте этот или натренируйте свою модель)
     request_to_api = apiai.ApiAI('7f01246612e64e3f89264a85a965ddd3').text_request()
     # На каком языке будет послан запрос
@@ -65,6 +70,11 @@ r = sr.Recognizer()
 
 
 def thread(my_func):    # Отдельный поток
+    """
+
+    :param my_func:
+    :return:
+    """
     def wrapper(*args, **kwargs):
         my_thread = threading.Thread(target=my_func, args=args, kwargs=kwargs)
         my_thread.start()
@@ -76,11 +86,21 @@ global interrupted_thread
 
 # Функции для сигналов между потоками
 def signal_handler(thread_signal, frame):
+    """
+
+    :param thread_signal:
+    :param frame:
+    :return:
+    """
     global interrupted_thread
     interrupted_thread = True
 
 
 def interrupt_callback():
+    """
+
+    :return:
+    """
     global interrupted_thread
     return interrupted_thread
 
@@ -88,6 +108,10 @@ def interrupt_callback():
 # Функция активизирует Google Speech Recognition для распознавания команд
 @thread
 def listen_command():
+    """
+
+    :return:
+    """
     global listen
     global request
     global not_listen
@@ -119,6 +143,9 @@ global pr_cmd
 
 # Графический интерфейс PyQt 
 class Program_window(QMainWindow):
+    """
+
+    """
     # Объявляем сигналы, которые приходят от асинхронных функций
     thread_signal = QtCore.pyqtSignal(list, name='thread_signal')
     assistant_listen = QtCore.pyqtSignal(list, name='assistant_listen')
@@ -173,6 +200,12 @@ class Program_window(QMainWindow):
 
     # Обработка клика по картинке
     def eventFilter(self, obj, event):
+        """
+
+        :param obj:
+        :param event:
+        :return:
+        """
         if event.type() == 2:
             btn = event.button()
             if btn == 1:
@@ -183,6 +216,11 @@ class Program_window(QMainWindow):
 
     # Смена картинки в зависимости от того слушает она или говорит
     def picture_change(self, data):
+        """
+
+        :param data:
+        :return:
+        """
         if data[0] == 1:
             # Ассистент слушает
             self.label.setText("<center><img src='file:///"+os.getcwd()+"/img/img_listen.jpg'></center>")
@@ -192,6 +230,11 @@ class Program_window(QMainWindow):
 
     # Добавление в html чат фразы ассистента
     def adding_response_to_chat_by_assistant(self, phrase):
+        """
+
+        :param phrase:
+        :return:
+        """
         global html_template
         global html_code
         html_code = '<div class="robot">' + phrase + '</div>' + html_code
@@ -201,6 +244,11 @@ class Program_window(QMainWindow):
 
     # Добавление в html чат фразы пользователя
     def adding_query_to_chat_by_user(self, phrase):
+        """
+
+        :param phrase:
+        :return:
+        """
         global html_template
         global html_code
         html_code = '<div class="you">' + phrase + '</div>' + html_code
@@ -211,6 +259,11 @@ class Program_window(QMainWindow):
     # Произносим ответ вслух синтезом речи
     @staticmethod
     def pronounce_assistant_answer(phrase):
+        """
+
+        :param phrase:
+        :return:
+        """
         global engine
         engine.say(phrase)
         engine.runAndWait()
@@ -218,42 +271,47 @@ class Program_window(QMainWindow):
  
     # Функция в которой решаем что отвечать на фразы пользователя    
     def response_to_user_request(self, data):
+        """
+
+        :param data:
+        :return:
+        """
         global pr_urls
         global pr_cmd
         # Получаем фразу от пользователя
-        vp = data[0].lower()
+        phrase = data[0].lower()
         # Отображаем её в чате
-        self.adding_response_to_chat_by_assistant(vp)
+        self.adding_response_to_chat_by_assistant(phrase)
         # Ответ по умолчанию
         assistant_answer = 'Я не поняла запрос'
         try:
             # Выполняем разные действия в зависимости от наличия ключевых слов фо фразе
-            if vp == 'пока' or vp == 'выход' or vp == 'выйти' or vp == 'до свидания':
+            if phrase == 'пока' or phrase == 'выход' or phrase == 'выйти' or phrase == 'до свидания':
                 assistant_answer = 'Ещё увидимся!'
                 self.adding_query_to_chat_by_user(assistant_answer)
                 self.pronounce_assistant_answer(assistant_answer)
                 sys.exit(app.exec_())
-            elif 'анекдот' in vp:
+            elif 'анекдот' in phrase:
                 assistant_answer = Assistant_functions.tell_joke()
-            elif 'запусти' in vp:
-                assistant_answer = Assistant_functions.start_application(vp)
-            elif ((vp.find("youtube") != -1) or (vp.find("ютюб") != -1) or
-                  (vp.find("ютуб") != -1) or (vp.find("you tube") != -1))\
-                    and (vp.find("смотреть") != -1):
-                self.browser2.load(QtCore.QUrl(Assistant_functions.find_on_tube(vp)))
+            elif 'запусти' in phrase:
+                assistant_answer = Assistant_functions.start_application(phrase)
+            elif ((phrase.find("youtube") != -1) or (phrase.find("ютюб") != -1) or
+                  (phrase.find("ютуб") != -1) or (phrase.find("you tube") != -1))\
+                    and (phrase.find("смотреть") != -1):
+                self.browser2.load(QtCore.QUrl(Assistant_functions.find_on_tube(phrase)))
                 assistant_answer = 'Вот видео.'
-            elif (vp.find("слушать") != -1) and (vp.find("песн") != -1):
-                self.browser2.load(QtCore.QUrl(Assistant_functions.find_on_tube(vp)))
+            elif (phrase.find("слушать") != -1) and (phrase.find("песн") != -1):
+                self.browser2.load(QtCore.QUrl(Assistant_functions.find_on_tube(phrase)))
                 assistant_answer = 'Вот песня.'
-            elif ((vp.find("найти") != -1) or (vp.find("найди") != -1)) \
-                    and not(vp.find("статью") != -1):
-                user_request = Assistant_functions.clean_phrase(vp, ['найти', 'найди', 'про', 'про то', 'о том'])
+            elif ((phrase.find("найти") != -1) or (phrase.find("найди") != -1)) \
+                    and not(phrase.find("статью") != -1):
+                user_request = Assistant_functions.clean_phrase(phrase, ['найти', 'найди', 'про', 'про то', 'о том'])
                 question = Assistant_functions.browser_search(user_request)
                 self.browser2.load(QtCore.QUrl(question[0]))
                 assistant_answer = 'Ответ найден'
         except():
             # Если ключевых слов не нашли, используем Dialogflow
-            assistant_answer = ai_message(vp)
+            assistant_answer = ai_message(phrase)
         # Добавляем ответ в чат
         self.adding_query_to_chat_by_user(assistant_answer)
         # Читаем ответ вслух
@@ -261,6 +319,11 @@ class Program_window(QMainWindow):
         
     # Функция меняет картинку если ассистент тебя не расслышал
     def response_to_unrecognized_speech(self, data):
+        """
+
+        :param data:
+        :return:
+        """
         self.label.setText("<center><img src='file:///"+os.getcwd() +
                            "/img/img_response_to_unrecognized_speech.jpg'></center>")
 

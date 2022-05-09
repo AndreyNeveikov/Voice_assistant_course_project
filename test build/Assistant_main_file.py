@@ -18,7 +18,6 @@ engine = pyttsx3.init()
 voices = engine.getProperty('voices')
 # Устанавливаем русский язык
 engine.setProperty('voice', 'ru')
-
 # Скорость чтения
 engine.setProperty('rate', 200)
 
@@ -235,7 +234,7 @@ class Program_window(QMainWindow):
                 self.pronounce_assistant_answer(assistant_answer)
                 sys.exit(app.exec_())
             elif 'анекдот' in vp:
-                assistant_answer = Assistant_functions.anekdot()
+                assistant_answer = Assistant_functions.tell_joke()
             elif 'запусти' in vp:
                 assistant_answer = Assistant_functions.start_application(vp)
             elif ((vp.find("youtube") != -1) or (vp.find("ютюб") != -1) or

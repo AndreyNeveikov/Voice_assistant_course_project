@@ -76,8 +76,14 @@ def start_application(statement):
         os.startfile('C:\\Users\\User\\MediaGet2\\mediaget.exe')
         answer = 'Торент запущен'
 
-    elif (statement.find("sublime") != -1) or (statement.find("text") != -1) \
-            or (statement.find("саблайм") != -1) or (statement.find("текст") != -1):
+    elif ((statement.find("visual") != -1) or (statement.find("визуал") != -1)
+          or (statement.find("вижуал") != -1)) \
+            and ((statement.find("studio") != -1) or (statement.find("студио") != -1)):
+        os.startfile("E:\\VS\\Common7\\IDE\\devenv.exe")
+        answer = 'Visual Studio запущен'
+
+    elif ((statement.find("sublime") != -1) or (statement.find("саблайм") != -1)) \
+            and ((statement.find("text") != -1) or (statement.find("текст") != -1)):
         os.startfile("E:\\Sublime Text 3\\sublime_text.exe")
         answer = 'Sublime text запущен'
 

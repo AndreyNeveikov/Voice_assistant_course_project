@@ -2,6 +2,7 @@
 from PyQt5.QtWidgets import QLabel, QApplication, QMainWindow
 from PyQt5.QtWebEngineWidgets import *
 from PyQt5 import QtCore, QtGui
+from PyQt5.QtGui import QIcon
 
 # Functional
 import speech_recognition as sr
@@ -23,7 +24,7 @@ engine.setProperty('voice', 'ru')    # Set the Russian language
 engine.setProperty('rate', 200)    # Set voice speed
 
 for voice in voices:    # Select the desired voice
-    if voice.name == 'Elena':
+    if voice.name == 'Anna':
         engine.setProperty('voice', voice.id)
 
 # Get the html page for messages in the chat window
@@ -157,6 +158,7 @@ class ProgramWindow(QMainWindow):
 
     def __init__(self, *args):
         super().__init__()
+        self.setWindowIcon(QIcon("img\\app_icon.png"))
         self.setAnimated(False)
         self.flag = True
         self.centralwidget = QMainWindow()
@@ -188,7 +190,8 @@ class ProgramWindow(QMainWindow):
         self.browser.show()
         self.browser2.setHtml(html_code_2, QtCore.QUrl("file://"))
         self.browser2.show()  
-        self.label.setText("<center><img src='file:///"+os.getcwd()+"/img/img_greetings.jpg'></center>")
+        self.label.setText("<center><img src='file:///"+os.getcwd() +
+                           "/img/img_greetings.jpg'></center>")
 
         # Connect signals and class functions
         global answer
@@ -206,10 +209,11 @@ class ProgramWindow(QMainWindow):
     # Handling a click on the image
     def eventFilter(self, obj, event):
         """
+        Function that handles clicks on an image
 
-        :param obj:
-        :param event:
-        :return:
+        :param obj: the object on which the action is performed
+        :param event: type of event
+        :return: changed object
         """
         if event.type() == 2:
             btn = event.button()
@@ -219,23 +223,26 @@ class ProgramWindow(QMainWindow):
                 self.label.setText("<center><img src='file:///"+os.getcwd()+"/img/img_greetings.jpg'></center>")
         return super(QMainWindow, self).eventFilter(obj, event)
 
-    # Смена картинки в зависимости от того слушает она или говорит
     def picture_change(self, data):
         """
+        Function of changing the picture depending on
+        whether the assistant is listening or talking
 
         :param data:
         :return:
         """
         if data[0] == 1:
-            # Ассистент слушает
-            self.label.setText("<center><img src='file:///"+os.getcwd()+"/img/img_listen.jpg'></center>")
+            # Assistant listens
+            self.label.setText("<center><img src='file:///" + os.getcwd() +
+                               "/img/img_listen.jpg'></center>")
         if data[0] == 2:
-            # Ассистент говорит
-            self.label.setText("<center><img src='file:///"+os.getcwd()+"/img/img_greetings.jpg'></center>")
+            # Assistant speaks
+            self.label.setText("<center><img src='file:///" + os.getcwd() +
+                               "/img/img_greetings.jpg'></center>")
 
-    # Добавление в html чат фразы ассистента
     def adding_response_to_chat_by_assistant(self, phrase):
         """
+        Adding an assistant's phrase to the html chat
 
         :param phrase:
         :return:
@@ -247,9 +254,9 @@ class ProgramWindow(QMainWindow):
         self.browser.setHtml(html_result, QtCore.QUrl("file://"))
         self.browser.show()
 
-    # Добавление в html чат фразы пользователя
     def adding_query_to_chat_by_user(self, phrase):
         """
+        Adding a user phrase to the html chat
 
         :param phrase:
         :return:
@@ -261,10 +268,10 @@ class ProgramWindow(QMainWindow):
         self.browser.setHtml(html_result, QtCore.QUrl("file://"))
         self.browser.show()
 
-    # Произносим ответ вслух синтезом речи
     @staticmethod
     def pronounce_assistant_answer(phrase):
         """
+        Say the answer aloud with speech synthesis
 
         :param phrase:
         :return:
@@ -273,24 +280,23 @@ class ProgramWindow(QMainWindow):
         engine.say(phrase)
         engine.runAndWait()
         engine.stop()
- 
-    # Функция в которой решаем что отвечать на фразы пользователя    
+
     def response_to_user_request(self, data):
         """
+        Answer selection function
 
         :param data:
         :return:
         """
         global p_urls
         global p_cmd
-        # Получаем фразу от пользователя
-        phrase = data[0].lower()
-        # Отображаем её в чате
-        self.adding_response_to_chat_by_assistant(phrase)
-        # Ответ по умолчанию
-        assistant_answer = 'Я не поняла запрос'
+
+        phrase = data[0].lower()    # Get phrase from user
+        self.adding_response_to_chat_by_assistant(phrase)   # Display the user's phrases in the chat
+        assistant_answer = 'Я не поняла запрос'    # Default response
+
         try:
-            # Выполняем разные действия в зависимости от наличия ключевых слов фо фразе
+            # Perform an action depending on the presence of keywords in the phrase
             if phrase == 'пока' or phrase == 'выход' or phrase == 'выйти' or phrase == 'до свидания':
                 assistant_answer = 'Ещё увидимся!'
                 self.adding_query_to_chat_by_user(assistant_answer)
@@ -315,16 +321,14 @@ class ProgramWindow(QMainWindow):
                 self.browser2.load(QtCore.QUrl(question[0]))
                 assistant_answer = 'Ответ найден'
         except():
-            # Если ключевых слов не нашли, используем Dialogflow
-            assistant_answer = ai_message(phrase)
-        # Добавляем ответ в чат
-        self.adding_query_to_chat_by_user(assistant_answer)
-        # Читаем ответ вслух
-        self.pronounce_assistant_answer(assistant_answer)
-        
-    # Функция меняет картинку если ассистент тебя не расслышал
+            assistant_answer = ai_message(phrase)    # If keywords are not found, use Dialogflow
+
+        self.adding_query_to_chat_by_user(assistant_answer)    # Add response to the chat
+        self.pronounce_assistant_answer(assistant_answer)    # Speak out the answer
+
     def response_to_unrecognized_speech(self, data):
         """
+        Function that changes the picture if the assistant did not hear you
 
         :param data:
         :return:
@@ -333,9 +337,9 @@ class ProgramWindow(QMainWindow):
                            "/img/img_response_to_unrecognized_speech.jpg'></center>")
 
 
-# Запускаем программу на выполнение    
+# Run the program
 app = QApplication([])
 window = ProgramWindow()
-window.resize(1340, 615)    # Размер окна
+window.resize(1340, 615)    # Window size
 window.show()
 app.exec_()

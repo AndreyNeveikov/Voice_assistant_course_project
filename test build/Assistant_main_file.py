@@ -44,7 +44,7 @@ def ai_message(phrase):
     A function that calls Dialogflow and receives a response
 
     :param phrase: user phrase
-    :return: issue an assistant's answer or a blank that the message is not understood
+    :return: issue an assistant answer or a blank that the message is not understood
     """
     # API token to Dialogflow
     request_to_api = apiai.ApiAI('7f01246612e64e3f89264a85a965ddd3').text_request()
@@ -228,9 +228,10 @@ class ProgramWindow(QMainWindow):
         Function of changing the picture depending on
         whether the assistant is listening or talking
 
-        :param data:
-        :return:
+        :param data: assistant mode
+        :return: nothing, just change an image of the assistant's mode
         """
+        print(data)
         if data[0] == 1:
             # Assistant listens
             self.label.setText("<center><img src='file:///" + os.getcwd() +
@@ -244,8 +245,8 @@ class ProgramWindow(QMainWindow):
         """
         Adding an assistant's phrase to the html chat
 
-        :param phrase:
-        :return:
+        :param phrase: assistant answer
+        :return: nothing, writes assistant answer in the html chat
         """
         global html_template
         global html_code
@@ -258,8 +259,8 @@ class ProgramWindow(QMainWindow):
         """
         Adding a user phrase to the html chat
 
-        :param phrase:
-        :return:
+        :param phrase: assistant request
+        :return: nothing, writes user request in the html chat
         """
         global html_template
         global html_code
@@ -271,10 +272,10 @@ class ProgramWindow(QMainWindow):
     @staticmethod
     def pronounce_assistant_answer(phrase):
         """
-        Say the answer aloud with speech synthesis
+        Say the phrase aloud with speech synthesis
 
-        :param phrase:
-        :return:
+        :param phrase: written phrase
+        :return: nothing
         """
         global engine
         engine.say(phrase)
@@ -285,12 +286,13 @@ class ProgramWindow(QMainWindow):
         """
         Answer selection function
 
-        :param data:
-        :return:
+        :param data: list of keywords
+        :return: assistant answer
         """
         global p_urls
         global p_cmd
 
+        print(data)
         phrase = data[0].lower()    # Get phrase from user
         self.adding_response_to_chat_by_assistant(phrase)   # Display the user's phrases in the chat
         assistant_answer = 'Я не поняла запрос'    # Default response
@@ -326,12 +328,12 @@ class ProgramWindow(QMainWindow):
         self.adding_query_to_chat_by_user(assistant_answer)    # Add response to the chat
         self.pronounce_assistant_answer(assistant_answer)    # Speak out the answer
 
-    def response_to_unrecognized_speech(self, data):
+    def response_to_unrecognized_speech(self, *args):
         """
         Function that changes the picture if the assistant did not hear you
 
-        :param data:
-        :return:
+        :param args: QtCore.Qt.QueuedConnection
+        :return: nothing, just changes the picture
         """
         self.label.setText("<center><img src='file:///"+os.getcwd() +
                            "/img/img_response_to_unrecognized_speech.jpg'></center>")

@@ -180,8 +180,3 @@ def browser_search(user_request):
                 user_request = user_request[0].split('title')
                 search_result.append(user_request[0])
     return search_result
-
-
-
-
-

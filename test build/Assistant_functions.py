@@ -1,12 +1,13 @@
+# Functional
+from urllib.parse import quote
+from urllib import request
+import urllib.request
+import subprocess
+import webbrowser
 import requests
 import bs4
-import webbrowser
 import re
 import os
-import subprocess
-from urllib import request
-from urllib.parse import quote
-import urllib.request
 
 
 def clean_phrase(statement, words_list):

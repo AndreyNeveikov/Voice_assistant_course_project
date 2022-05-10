@@ -1,14 +1,19 @@
-from PyQt5 import QtCore, QtGui
+# Interface
 from PyQt5.QtWidgets import QLabel, QApplication, QMainWindow
 from PyQt5.QtWebEngineWidgets import *
+from PyQt5 import QtCore, QtGui
+
+# Functional
+import speech_recognition as sr
+import threading
+import pyttsx3
+import signal
+import apiai
+import json
 import sys
 import os
-import threading
-import speech_recognition as sr
-import signal
-import pyttsx3
-import json
-import apiai
+
+# Files
 import Assistant_functions
 
 
@@ -33,47 +38,39 @@ html_code_2 = file.read()
 file.close()
 
 
-def ai_message(s):
+def ai_message(phrase):
     """
     A function that calls Dialogflow and receives a response
 
-    :param s:
-    :return:
+    :param phrase: user phrase
+    :return: issue an assistant's answer or a blank that the message is not understood
     """
-    # Токен API к Dialogflow (оставьте этот или натренируйте свою модель)
+    # API token to Dialogflow
     request_to_api = apiai.ApiAI('7f01246612e64e3f89264a85a965ddd3').text_request()
-    # На каком языке будет послан запрос
-    request_to_api.lang = 'ru'
-    # ID Сессии диалога (нужно, чтобы потом учить бота)
-    request_to_api.session_id = 'voice_assistant'
-    # Посылаем запрос к ИИ с сообщением от юзера
-    request_to_api.query = s
+
+    request_to_api.lang = 'ru'   # Request language
+    request_to_api.session_id = 'voice_assistant'   # Dialog session ID
+    request_to_api.query = phrase   # Sending a request with a message from the user
+
+    # Getting a response
     response_json = json.loads(request_to_api.getresponse().read().decode('utf-8'))
-    # Разбираем JSON и вытаскиваем ответ
-    response = response_json['result']['fulfillment']['speech']
-    # Если есть ответ от бота - выдаём его,
-    # если нет - бот его не понял
-    if response:
+    response = response_json['result']['fulfillment']['speech']  # Parse JSON and get response
+    if response:    # If there is a response from the assistant - issue it
         return response
-    else:
+    else:   # if there is no answer, we display a stub about an incomprehensible question
         return 'Я Вас не поняла :/'
 
 
-answer = ''
-listen = ''
-request = ''
-not_listen = ''
-speaking = ''
-
-# Объявляем распознавание речи от Google
-r = sr.Recognizer()
+r = sr.Recognizer()     # Variable for speech recognition from Google
 
 
-def thread(my_func):    # Отдельный поток
+def thread(my_func):
     """
+    Function that creates a separate thread
+    (used as decorator)
 
-    :param my_func:
-    :return:
+    :param my_func: a function to run on a new thread
+    :return: wrapper
     """
     def wrapper(*args, **kwargs):
         my_thread = threading.Thread(target=my_func, args=args, kwargs=kwargs)
@@ -84,13 +81,13 @@ def thread(my_func):    # Отдельный поток
 global interrupted_thread
 
 
-# Функции для сигналов между потоками
 def signal_handler(thread_signal, frame):
     """
+    Function for signals between threads
 
-    :param thread_signal:
-    :param frame:
-    :return:
+    :param thread_signal: thread signal
+    :param frame: signal handler
+    :return: nothing, just changes the state of the thread
     """
     global interrupted_thread
     interrupted_thread = True
@@ -98,55 +95,61 @@ def signal_handler(thread_signal, frame):
 
 def interrupt_callback():
     """
+    A function that accesses an interrupted thread
 
-    :return:
+    :return: a thread interrupted by another thread
     """
     global interrupted_thread
     return interrupted_thread
 
 
-# Функция активизирует Google Speech Recognition для распознавания команд
 @thread
 def listen_command():
     """
+    Activates Speech Recognition to recognize commands
 
-    :return:
+    :return: recognized phrase or handled error
     """
     global listen
     global request
     global not_listen
-    # Следим за состоянием ассистента - слушает она или говорит
-    listen.emit([1])
-    # Слушаем микрофон
-    with sr.Microphone() as source:
+
+    listen.emit([1])    # Monitoring the state of the assistant (listens or speaks)
+    with sr.Microphone() as source:     # Listen to the microphone
         audio = r.listen(source)
     try:
-        # Отправляем запись с микрофона гуглу, получаем распознанную фразу
+        # Send the record to Google, get the recognized phrase
         voice_record = r.recognize_google(audio, language="ru-RU").lower()
-        # Меняем состояние ассистента со слушания на ответ
-        listen.emit([2])
-        # Отправляем распознанную фразу на обработку в функцию response_to_user_request
+        listen.emit([2])    # Change the assistant's state from listening to answering
+        # Send the recognized phrase for processing to the response_to_user_request function
         request.emit([voice_record])
-    # В случае ошибки меняем состояние ассистента на "не расслышал"
+    # In case of an error, change the state of the assistant to "didn't hear"
     except sr.UnknownValueError:
-        print("Робот не расслышал фразу")
+        print("Ассистент не расслышал фразу")
         not_listen.emit(['00'])
-    except sr.RequestError as e:
-        print("Ошибка сервиса; {0}".format(e))
+    except sr.RequestError as error:
+        print("Ошибка сервиса; {0}".format(error))
 
 
-signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGINT, signal_handler)    # Thread signal processing
 
-global pr_urls
-global pr_cmd
+global p_urls
+global p_cmd
 
 
-# Графический интерфейс PyQt 
-class Program_window(QMainWindow):
+# Blanks for the state of threads
+answer = ''
+listen = ''
+request = ''
+not_listen = ''
+speaking = ''
+
+
+class ProgramWindow(QMainWindow):
     """
-
+    Create a PyQt interface
     """
-    # Объявляем сигналы, которые приходят от асинхронных функций
+    # Declare signals that come from asynchronous functions
     thread_signal = QtCore.pyqtSignal(list, name='thread_signal')
     assistant_listen = QtCore.pyqtSignal(list, name='assistant_listen')
     user_request = QtCore.pyqtSignal(list, name='user_request')
@@ -159,33 +162,35 @@ class Program_window(QMainWindow):
         self.centralwidget = QMainWindow()
         self.centralwidget.setObjectName("centralwidget")
         self.setCentralWidget(self.centralwidget)
-        # Label в который мы загрузим картинку с девушкой
+        # Label in which we will load pictures
         self.label = QLabel(self.centralwidget)
-        # Прикрепляем к Label функцию обработки клика
+        # Attach a click handling function to the Label
         self.label.installEventFilter(self)
-        # Настраиваем вид курсора на картинке
+        # Customize the appearance of the cursor on the picture
         self.label.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        # Позиционируем Label внутри окна
+        # Position the Label inside the window
         self.label.setGeometry(QtCore.QRect(2, 2, 400, 300))
-        # Объявляем элемент QWebEngineView для отображения html странички с чатом
+        # Declare the QWebEngineView element to display the html page with the chat
         self.browser = QWebEngineView(self.centralwidget)
-        # Объявляем элемент QWebEngineView для отображения видео с ютуба, текстов и веб страниц
+        # Declaring the QWebEngineView element to display YouTube videos, texts and web pages
         self.browser2 = QWebEngineView(self.centralwidget)
-        # Позиционируем QWebEngineView внутри окна
+        # Position the QWebEngineView inside the window
         self.browser.setGeometry(QtCore.QRect(2, 305, 400, 300))
         self.browser2.setGeometry(QtCore.QRect(405, 2, 930, 603))
 
-        # Загружаем в QWebEngineView html документ с чатом
+        # Load the html page with the chat into QWebEngineView
         global html_template
         global html_code
         global html_code_2
+
         html_result = html_template.replace('%code%', html_code)
         self.browser.setHtml(html_result, QtCore.QUrl("file://"))
         self.browser.show()
         self.browser2.setHtml(html_code_2, QtCore.QUrl("file://"))
         self.browser2.show()  
         self.label.setText("<center><img src='file:///"+os.getcwd()+"/img/img_greetings.jpg'></center>")
-        # Соединяем сигналы и функции класса
+
+        # Connect signals and class functions
         global answer
         answer = self.thread_signal
         global listen
@@ -198,7 +203,7 @@ class Program_window(QMainWindow):
         self.user_request.connect(self.response_to_user_request, QtCore.Qt.QueuedConnection)
         self.unrecognized_speech.connect(self.response_to_unrecognized_speech, QtCore.Qt.QueuedConnection)
 
-    # Обработка клика по картинке
+    # Handling a click on the image
     def eventFilter(self, obj, event):
         """
 
@@ -276,8 +281,8 @@ class Program_window(QMainWindow):
         :param data:
         :return:
         """
-        global pr_urls
-        global pr_cmd
+        global p_urls
+        global p_cmd
         # Получаем фразу от пользователя
         phrase = data[0].lower()
         # Отображаем её в чате
@@ -330,7 +335,7 @@ class Program_window(QMainWindow):
 
 # Запускаем программу на выполнение    
 app = QApplication([])
-window = Program_window()
+window = ProgramWindow()
 window.resize(1340, 615)    # Размер окна
 window.show()
 app.exec_()

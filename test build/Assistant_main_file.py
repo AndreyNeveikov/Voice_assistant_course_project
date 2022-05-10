@@ -231,7 +231,6 @@ class ProgramWindow(QMainWindow):
         :param data: assistant mode
         :return: nothing, just change an image of the assistant's mode
         """
-        print(data)
         if data[0] == 1:
             # Assistant listens
             self.label.setText("<center><img src='file:///" + os.getcwd() +
@@ -292,7 +291,6 @@ class ProgramWindow(QMainWindow):
         global p_urls
         global p_cmd
 
-        print(data)
         phrase = data[0].lower()    # Get phrase from user
         self.adding_response_to_chat_by_assistant(phrase)   # Display the user's phrases in the chat
         assistant_answer = 'Я не поняла запрос'    # Default response
@@ -304,6 +302,8 @@ class ProgramWindow(QMainWindow):
                 self.adding_query_to_chat_by_user(assistant_answer)
                 self.pronounce_assistant_answer(assistant_answer)
                 sys.exit(app.exec_())
+            elif 'ответь' in phrase:
+                assistant_answer = Assistant_functions.assistant_answering_dialogue_phrase(phrase)
             elif 'анекдот' in phrase:
                 assistant_answer = Assistant_functions.tell_joke()
             elif 'запусти' in phrase:
@@ -333,7 +333,7 @@ class ProgramWindow(QMainWindow):
         Function that changes the picture if the assistant did not hear you
 
         :param args: QtCore.Qt.QueuedConnection
-        :return: nothing, just changes the picture
+        :return: nothing, just change the picture
         """
         self.label.setText("<center><img src='file:///"+os.getcwd() +
                            "/img/img_response_to_unrecognized_speech.jpg'></center>")

@@ -39,6 +39,30 @@ def tell_joke():
     return joke
 
 
+def assistant_answering_dialogue_phrase(phrase):
+    answer = 'Прожуй и скажи нормально!'
+    phrase = clean_phrase(phrase, ['кто', 'что'])
+
+    if (phrase.find("тебя") != -1) and (phrase.find("создал") != -1):
+        answer = 'Меня создал Невейков Андрей'
+
+    elif (phrase.find("такое") != -1) and (phrase.find("ооп") != -1):
+        answer = '''
+        Объектно-ориентированное программирование — методология программирования,
+        основанная на представлении программы в виде совокупности объектов, 
+        каждый из которых является экземпляром определённого класса, 
+        а классы образуют иерархию наследования.
+        '''
+    elif (phrase.find("такое") != -1) and (phrase.find("паттерн") != -1) \
+            and (phrase.find("проектирования") != -1):
+        answer = '''
+        Паттерн проектирования - это повторяемая архитектурная конструкция,
+        представляющая собой решение проблемы проектирования в рамках
+        некоторого часто возникающего контекста.
+        '''
+    return answer
+
+
 def open_url(url):
     """
     Function that opens the site in a browser
@@ -144,7 +168,8 @@ def find_on_tube(phrase):
             if len(link_collector) < 25:
                 tmp_list_for_ends_of_links.append(link_collector)
 
-    tmp_dict_for_ends_of_links = dict(zip(tmp_list_for_ends_of_links, tmp_list_for_ends_of_links)).values()
+    tmp_dict_for_ends_of_links = dict(
+        zip(tmp_list_for_ends_of_links, tmp_list_for_ends_of_links)).values()
     tmp_list_for_link = []
     for ends_of_links in tmp_dict_for_ends_of_links:
         tmp_list_for_link.append(ends_of_links)

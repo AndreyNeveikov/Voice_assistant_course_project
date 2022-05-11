@@ -39,14 +39,21 @@ def tell_joke():
     return joke
 
 
+def write_in_notepad(phrase):
+    pass
+
+
 def assistant_answering_dialogue_phrase(phrase):
     answer = 'Прожуй и скажи нормально!'
-    phrase = clean_phrase(phrase, ['кто', 'что'])
+    phrase = clean_phrase(phrase, ['кто', 'что', 'как', 'когда', 'зачем'])
 
     if (phrase.find("тебя") != -1) and (phrase.find("создал") != -1):
         answer = 'Меня создал Невейков Андрей'
 
-    elif (phrase.find("такое") != -1) and (phrase.find("ооп") != -1):
+    elif (phrase.find("такое") != -1) and ((phrase.find("ооп") != -1)
+                                           or (phrase.find("офп") != -1)
+                                           or (phrase.find("о о п") != -1)
+                                           or (phrase.find("о п") != -1)):
         answer = '''
         Объектно-ориентированное программирование — методология программирования,
         основанная на представлении программы в виде совокупности объектов, 

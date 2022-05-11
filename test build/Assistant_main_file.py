@@ -9,8 +9,6 @@ import speech_recognition as sr
 import threading
 import pyttsx3
 import signal
-import apiai
-import json
 import sys
 import os
 
@@ -37,29 +35,6 @@ file.close()
 file = open('feature_list.html', 'r', encoding='UTF-8')
 html_code_2 = file.read()
 file.close()
-
-
-def ai_message(phrase):
-    """
-    A function that calls Dialogflow and receives a response
-
-    :param phrase: user phrase
-    :return: issue an assistant answer or a blank that the message is not understood
-    """
-    # API token to Dialogflow
-    request_to_api = apiai.ApiAI('7f01246612e64e3f89264a85a965ddd3').text_request()
-
-    request_to_api.lang = 'ru'   # Request language
-    request_to_api.session_id = 'voice_assistant'   # Dialog session ID
-    request_to_api.query = phrase   # Sending a request with a message from the user
-
-    # Getting a response
-    response_json = json.loads(request_to_api.getresponse().read().decode('utf-8'))
-    response = response_json['result']['fulfillment']['speech']  # Parse JSON and get response
-    if response:    # If there is a response from the assistant - issue it
-        return response
-    else:   # if there is no answer, we display a stub about an incomprehensible question
-        return 'Я Вас не поняла :/'
 
 
 r = sr.Recognizer()     # Variable for speech recognition from Google
@@ -297,33 +272,42 @@ class ProgramWindow(QMainWindow):
 
         try:
             # Perform an action depending on the presence of keywords in the phrase
-            if phrase == 'пока' or phrase == 'выход' or phrase == 'выйти' or phrase == 'до свидания':
-                assistant_answer = 'Ещё увидимся!'
-                self.adding_query_to_chat_by_user(assistant_answer)
-                self.pronounce_assistant_answer(assistant_answer)
-                sys.exit(app.exec_())
-            elif 'ответь' in phrase:
+            if 'ответь' in phrase:
                 assistant_answer = Assistant_functions.assistant_answering_dialogue_phrase(phrase)
-            elif 'анекдот' in phrase:
-                assistant_answer = Assistant_functions.tell_joke()
-            elif 'запусти' in phrase:
+
+            elif (phrase.find("запустить") != -1) or (phrase.find("запусти") != -1):
                 assistant_answer = Assistant_functions.start_application(phrase)
+
             elif ((phrase.find("youtube") != -1) or (phrase.find("ютюб") != -1) or
                   (phrase.find("ютуб") != -1) or (phrase.find("you tube") != -1))\
                     and (phrase.find("смотреть") != -1):
                 self.browser2.load(QtCore.QUrl(Assistant_functions.find_on_tube(phrase)))
                 assistant_answer = 'Вот видео.'
-            elif (phrase.find("слушать") != -1) and (phrase.find("песн") != -1):
+
+            elif ((phrase.find("анекдот") != -1) or (phrase.find("шутка") != -1) or
+                  (phrase.find("анек") != -1) or (phrase.find("прикол") != -1))\
+                    or (phrase.find("смешной") != -1):
+                assistant_answer = Assistant_functions.tell_joke()
+
+            elif (phrase.find("слушать") != -1) and ((phrase.find("песн") != -1) or (phrase.find("песню") != -1)):
                 self.browser2.load(QtCore.QUrl(Assistant_functions.find_on_tube(phrase)))
                 assistant_answer = 'Вот песня.'
+
             elif ((phrase.find("найти") != -1) or (phrase.find("найди") != -1)) \
                     and not(phrase.find("статью") != -1):
                 user_request = Assistant_functions.clean_phrase(phrase, ['найти', 'найди', 'про', 'про то', 'о том'])
                 question = Assistant_functions.browser_search(user_request)
                 self.browser2.load(QtCore.QUrl(question[0]))
                 assistant_answer = 'Ответ найден'
+
+            elif phrase == 'пока' or phrase == 'выход' or phrase == 'выйти' or phrase == 'до свидания':
+                assistant_answer = 'Ещё увидимся!'
+                self.adding_query_to_chat_by_user(assistant_answer)
+                self.pronounce_assistant_answer(assistant_answer)
+                sys.exit(app.exec_())
+
         except():
-            assistant_answer = ai_message(phrase)    # If keywords are not found, use Dialogflow
+            assistant_answer = 'Я не поняла запрос'    # Default response
 
         self.adding_query_to_chat_by_user(assistant_answer)    # Add response to the chat
         self.pronounce_assistant_answer(assistant_answer)    # Speak out the answer

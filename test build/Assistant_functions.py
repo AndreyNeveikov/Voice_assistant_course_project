@@ -50,6 +50,16 @@ def assistant_answering_dialogue_phrase(phrase):
     if (phrase.find("тебя") != -1) and (phrase.find("создал") != -1):
         answer = 'Меня создал Невейков Андрей'
 
+    elif (phrase.find("как") != -1) and (phrase.find("тебя") != -1)\
+            and (phrase.find("зовут") != -1):
+        answer = 'Можете обращаться просто ассистент.'
+
+    elif (phrase.find("какие") != -1) and (phrase.find("библиотеки") != -1)\
+            and (phrase.find("ты") != -1) and (phrase.find("используешь") != -1):
+        answer = '''Извините за акцент: urllib, subprocess, webbrowser,
+        requests, bs4, re, os, sqlite3, PyQt5, speech recognition,
+        threading, pyttsx3, signal, sys'''
+
     elif (phrase.find("такое") != -1) and ((phrase.find("ооп") != -1)
                                            or (phrase.find("офп") != -1)
                                            or (phrase.find("о о п") != -1)
@@ -60,6 +70,7 @@ def assistant_answering_dialogue_phrase(phrase):
         каждый из которых является экземпляром определённого класса, 
         а классы образуют иерархию наследования.
         '''
+
     elif (phrase.find("такое") != -1) and (phrase.find("паттерн") != -1) \
             and (phrase.find("проектирования") != -1):
         answer = '''
@@ -67,6 +78,7 @@ def assistant_answering_dialogue_phrase(phrase):
         представляющая собой решение проблемы проектирования в рамках
         некоторого часто возникающего контекста.
         '''
+
     return answer
 
 
@@ -80,10 +92,10 @@ def open_url(url):
     webbrowser.open(url)
 
 
-# Запускает внешнюю команду ОС
 def os_run(cmd):
     """
-    Runs a standard application as a subprocess
+    Runs an external OS command to
+    run a standard application as a subprocess
 
     :param cmd: Abbreviated notation for command line
     :return: nothing, just create a subprocess and runs an application
@@ -165,7 +177,10 @@ def find_on_tube(phrase):
     :param phrase: youtube video request
     :return: link to the first video in the issue
     """
-    phrase = clean_phrase(phrase, ['хочу', 'на ютубе', 'на ютюбе', 'на ютуб', 'ютюб', 'на youtube', 'на you tube', 'на youtub', 'youtube', 'ютуб', 'ютубе', 'посмотреть', 'смотреть'])
+    phrase = clean_phrase(phrase,
+                          ['хочу', 'на ютубе', 'на ютюбе', 'на ютуб', 'ютюб', 'на youtube',
+                           'на you tube', 'на youtub', 'youtube', 'ютуб', 'ютубе',
+                           'посмотреть', 'смотреть'])
     tmp_list_for_ends_of_links = []
     compound_query = 'http://www.youtube.com/results?search_query='+quote(phrase)
     doc = urllib.request.urlopen(compound_query).read().decode('cp1251', errors='ignore')

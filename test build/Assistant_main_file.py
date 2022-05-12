@@ -14,6 +14,7 @@ import os
 
 # Files
 import Assistant_functions
+import Assistant_database
 
 
 engine = pyttsx3.init()    # Initialize SAPI5
@@ -275,6 +276,11 @@ class ProgramWindow(QMainWindow):
             if 'ответь' in phrase:
                 assistant_answer = Assistant_functions.assistant_answering_dialogue_phrase(phrase)
 
+            elif ((phrase.find("база") != -1) and (phrase.find("данных") != -1)) \
+                    or (((phrase.find("пароль") != -1) or (phrase.find("логин") != -1)
+                         or (phrase.find("добавить") != -1)) and (phrase.find("данные") != -1)):
+                assistant_answer = Assistant_database.assistant_answering_dialogue_phrase(phrase)
+
             elif (phrase.find("запустить") != -1) or (phrase.find("запусти") != -1):
                 assistant_answer = Assistant_functions.start_application(phrase)
 
@@ -295,7 +301,8 @@ class ProgramWindow(QMainWindow):
 
             elif ((phrase.find("найти") != -1) or (phrase.find("найди") != -1)) \
                     and not(phrase.find("статью") != -1):
-                user_request = Assistant_functions.clean_phrase(phrase, ['найти', 'найди', 'про', 'про то', 'о том'])
+                user_request = Assistant_functions.clean_phrase(phrase,
+                                                                ['найти', 'найди', 'про', 'про то', 'о том'])
                 question = Assistant_functions.browser_search(user_request)
                 self.browser2.load(QtCore.QUrl(question[0]))
                 assistant_answer = 'Ответ найден'

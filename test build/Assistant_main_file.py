@@ -277,9 +277,11 @@ class ProgramWindow(QMainWindow):
                 assistant_answer = Assistant_functions.assistant_answering_dialogue_phrase(phrase)
 
             elif ((phrase.find("база") != -1) and (phrase.find("данных") != -1)) \
-                    or (((phrase.find("пароль") != -1) or (phrase.find("логин") != -1)
-                         or (phrase.find("добавить") != -1)) and (phrase.find("данные") != -1)):
-                assistant_answer = Assistant_database.assistant_answering_dialogue_phrase(phrase)
+                    or (((phrase.find("пароль") != -1) or (phrase.find("логин") != -1))
+                        or ((phrase.find("добавить") != -1) and (phrase.find("данные") != -1))
+                        or ((phrase.find("записать") != -1) and (phrase.find("данные") != -1)
+                            and (phrase.find("сайта") != -1))):
+                assistant_answer = Assistant_database.selecting_database_function(phrase)
 
             elif (phrase.find("запустить") != -1) or (phrase.find("запусти") != -1):
                 assistant_answer = Assistant_functions.start_application(phrase)

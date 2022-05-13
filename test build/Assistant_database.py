@@ -46,12 +46,13 @@ def get_from_database(database_name, db_table_name, requested_website):
     conn.close()
 
 
-def assistant_answering_dialogue_phrase(phrase):
+def selecting_database_function(phrase):
     answer = 'Ошибка работы с базой данных'
     phrase = Assistant_functions.clean_phrase(phrase,
                                               ['добавь', 'напомни', 'какой', 'пароль', 'логин'])
 
-    if (phrase.find("создай") != -1) and (phrase.find("сделай") != -1):
+    if (phrase.find("создай") != -1) or (phrase.find("создать") != -1) \
+            or (phrase.find("сделай") != -1) or (phrase.find("сделать") != -1):
         answer = 'База данных уже существует'
         if not os.path.exists(f'{DATABASE_NAME}'):
             create_database(DATABASE_NAME)
@@ -61,12 +62,14 @@ def assistant_answering_dialogue_phrase(phrase):
                                             or (phrase.find("пароль") != -1)
                                             or (phrase.find("сайн") != -1)
                                             or (phrase.find("данные") != -1)):
+        insert_in_database(DATABASE_NAME, TABLE_NAME, ['1', '1', '1'])
         answer = f'''
         Для сайта {0} добавлен логин {1} и пароль {2}
         '''
 
     elif (phrase.find("напомни") != -1) or (phrase.find("какой") != -1) \
             and ((phrase.find("пароль") != -1) or (phrase.find("логин") != -1)):
+
         answer = f'''
         Для сайта {0} ваш логин {1} и пароль {2}
         '''
@@ -74,8 +77,30 @@ def assistant_answering_dialogue_phrase(phrase):
     return answer
 
 
+def write_authentication_data():
+    tmp_text_file = open('tmp.txt', 'w')
+    print(f'''Пожалуйста заполните данные о веб-сайте! 
+    
+    Как вы будете к нему обращаться ---->
+    Ваш логин ---->
+    Ваш пароль ---->''', file=tmp_text_file)
+    tmp_text_file.close()
+    os.startfile('tmp.txt')
+
+    try:
+        with open("tmp.txt", "r") as file:
+            # Распечатать сообщение об успешном завершении
+            print("Файл открыт для чтения.")
+    # Вызовите ошибку, если файл был открыт раньше
+    except IOError:
+        print("Файл уже открыт")
+
+
+
+
 website = 'you tube'
 website_data = ['you tube', '0000', '0000']
 
-#insert_in_database(DATABASE_NAME, TABLE_NAME, website_data)
+write_authentication_data()
+# insert_in_database(DATABASE_NAME, TABLE_NAME, website_data)
 get_from_database(DATABASE_NAME, TABLE_NAME, website)

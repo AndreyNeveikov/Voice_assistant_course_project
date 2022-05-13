@@ -196,7 +196,8 @@ def find_on_tube(phrase):
     for ends_of_links in tmp_dict_for_ends_of_links:
         tmp_list_for_link.append(ends_of_links)
     compound_youtube_link = tmp_list_for_link[0]
-    compound_youtube_link = 'https://www.youtube.com/watch?v='+compound_youtube_link+'?autoplay=1'
+    compound_youtube_link = 'https://www.youtube.com/watch?v=' +\
+                            compound_youtube_link+'?autoplay=1'
     return compound_youtube_link
 
 
@@ -214,16 +215,21 @@ def browser_search(user_request):
     tmp_search_result = []
     search_result = []
     for elements in parsed_page:
-        if (elements.rfind('wikihow') == -1) and (elements.rfind('an.yandex') == -1) and (elements.rfind('wikipedia') == -1) and (elements.rfind('otvet.mail.ru') == -1) and (elements.rfind('youtube') == -1) and (elements.rfind('.jpg') == -1) and (elements.rfind('.png')== -1) and (elements.rfind('.gif') == -1):
+        if (elements.rfind('wikihow') == -1) and (elements.rfind('an.yandex') == -1)\
+                and (elements.rfind('wikipedia') == -1) and (elements.rfind('otvet.mail.ru') == -1)\
+                and (elements.rfind('youtube') == -1) and (elements.rfind('.jpg') == -1)\
+                and (elements.rfind('.png') == -1) and (elements.rfind('.gif') == -1):
             answer = elements.replace(',', '')
             answer = answer.replace('"', '')
             answer = answer.replace('<b>', '')
             answer = answer.replace('</b>', '')
             answer = answer.split('url:')
+
             if len(answer) > 1:
                 user_request = answer[0].split('}')
                 tmp_search_result.append(user_request[0])
                 user_request = answer[1].split('}')
                 user_request = user_request[0].split('title')
                 search_result.append(user_request[0])
+
     return search_result

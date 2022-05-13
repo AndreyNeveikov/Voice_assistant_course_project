@@ -41,66 +41,60 @@ def get_from_database(database_name, db_table_name, requested_website):
     curs = conn.cursor()
     curs.execute(f'''SELECT * FROM {db_table_name}
     WHERE website = "{requested_website}"''')
-    print(curs.fetchall())
+    authentication_data = curs.fetchall()
     curs.close()
     conn.close()
+    return authentication_data[0]
 
 
 def selecting_database_function(phrase):
     answer = 'Ошибка работы с базой данных'
     phrase = Assistant_functions.clean_phrase(phrase,
                                               ['добавь', 'напомни', 'какой', 'пароль', 'логин'])
+    if not os.path.exists(f'{DATABASE_NAME}'):
+        create_database(DATABASE_NAME)
 
-    if (phrase.find("создай") != -1) or (phrase.find("создать") != -1) \
-            or (phrase.find("сделай") != -1) or (phrase.find("сделать") != -1):
-        answer = 'База данных уже существует'
-        if not os.path.exists(f'{DATABASE_NAME}'):
-            create_database(DATABASE_NAME)
-            answer = 'База данных создана'
+    if (phrase.find("базу") != -1) and \
+            ((phrase.find("очисти") != -1) or (phrase.find("очистить") != -1)
+             or (phrase.find("удали") != -1) or (phrase.find("удалить") != -1)):
+        answer = 'База данных очищена'
 
     elif (phrase.find("добавь") != -1) and ((phrase.find("логин") != -1)
                                             or (phrase.find("пароль") != -1)
                                             or (phrase.find("сайн") != -1)
                                             or (phrase.find("данные") != -1)):
         insert_in_database(DATABASE_NAME, TABLE_NAME, ['1', '1', '1'])
-        answer = f'''
-        Для сайта {0} добавлен логин {1} и пароль {2}
-        '''
+        answer = f'''Данные успешно добавлены!'''
 
     elif (phrase.find("напомни") != -1) or (phrase.find("какой") != -1) \
             and ((phrase.find("пароль") != -1) or (phrase.find("логин") != -1)):
-
-        answer = f'''
-        Для сайта {0} ваш логин {1} и пароль {2}
-        '''
+        answer = output_authentication_data()
 
     return answer
 
 
-def write_authentication_data():
+def output_authentication_data():
+    authentication_data = get_from_database(DATABASE_NAME, TABLE_NAME, website)
+
     tmp_text_file = open('tmp.txt', 'w')
-    print(f'''Пожалуйста заполните данные о веб-сайте! 
+    print(f'''Ваши данные для аутентификации: 
     
-    Как вы будете к нему обращаться ---->
-    Ваш логин ---->
-    Ваш пароль ---->''', file=tmp_text_file)
+    Название ресурса ----> {authentication_data[0]}
+    Ваш логин ----> {authentication_data[1]}
+    Ваш пароль ----> {authentication_data[2]}
+    ''', file=tmp_text_file)
     tmp_text_file.close()
     os.startfile('tmp.txt')
 
-    try:
-        with open("tmp.txt", "r") as file:
-            # Распечатать сообщение об успешном завершении
-            print("Файл открыт для чтения.")
-    # Вызовите ошибку, если файл был открыт раньше
-    except IOError:
-        print("Файл уже открыт")
-
-
+    answer = """Вы можете посмотреть данные в открывшемся файле,\nозвучивать их я не буду."""
+    return answer
 
 
 website = 'you tube'
-website_data = ['you tube', '0000', '0000']
+website_data = ['you tube', '0000', '1111']
 
-write_authentication_data()
 # insert_in_database(DATABASE_NAME, TABLE_NAME, website_data)
-get_from_database(DATABASE_NAME, TABLE_NAME, website)
+# res = get_from_database(DATABASE_NAME, TABLE_NAME, website)
+# print("res[0][0]", res[0][0], "\nres[0]", res[0], "\nres", res)
+
+output_authentication_data()

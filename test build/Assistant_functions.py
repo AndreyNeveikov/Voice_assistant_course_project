@@ -45,13 +45,19 @@ def write_in_notepad(phrase):
 
 def assistant_answering_dialogue_phrase(phrase):
     answer = 'Прожуй и скажи нормально!'
-    phrase = clean_phrase(phrase, ['кто', 'что', 'как', 'когда', 'зачем'])
+    phrase = clean_phrase(phrase,
+                          ['кто', 'что', 'как', 'когда', 'зачем', 'сколько', 'какой'])
 
     if (phrase.find("тебя") != -1) and (phrase.find("создал") != -1):
         answer = 'Меня создал Невейков Андрей'
 
     elif (phrase.find("как") != -1) and (phrase.find("тебя") != -1)\
             and (phrase.find("зовут") != -1):
+        answer = 'Можете обращаться просто ассистент.'
+
+    elif ((phrase.find("сколько") != -1) and (phrase.find("тебе") != -1)
+          and (phrase.find("лет") != -1)) or ((phrase.find("твой") != -1)
+                                              and (phrase.find("возраст") != -1)):
         answer = 'Можете обращаться просто ассистент.'
 
     elif (phrase.find("какие") != -1) and (phrase.find("библиотеки") != -1)\
@@ -179,7 +185,7 @@ def find_on_tube(phrase):
     """
     phrase = clean_phrase(phrase,
                           ['хочу', 'на ютубе', 'на ютюбе', 'на ютуб', 'ютюб', 'на youtube',
-                           'на you tube', 'на youtub', 'youtube', 'ютуб', 'ютубе',
+                           'на you tube', 'на youtub', 'youtube', 'ю туб', 'ютубе',
                            'посмотреть', 'смотреть'])
     tmp_list_for_ends_of_links = []
     compound_query = 'http://www.youtube.com/results?search_query='+quote(phrase)
@@ -214,6 +220,7 @@ def browser_search(user_request):
     parsed_page = re.compile('title":"(.*?)orig').findall(doc)
     tmp_search_result = []
     search_result = []
+    
     for elements in parsed_page:
         if (elements.rfind('wikihow') == -1) and (elements.rfind('an.yandex') == -1)\
                 and (elements.rfind('wikipedia') == -1) and (elements.rfind('otvet.mail.ru') == -1)\

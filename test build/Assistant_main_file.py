@@ -192,10 +192,10 @@ class ProgramWindow(QMainWindow):
         :return: changed object
         """
         if event.type() == 2:
-            btn = event.button()
-            if btn == 1:
+            mouse_button = event.button()
+            if mouse_button == 1:
                 listen_command()
-            elif btn == 2:
+            elif mouse_button == 2:
                 self.label.setText("<center><img src='file:///"+os.getcwd()+"/img/img_greetings.jpg'></center>")
         return super(QMainWindow, self).eventFilter(obj, event)
 

@@ -1,107 +1,242 @@
+# Functional
+from urllib.parse import quote
+from urllib import request
+import urllib.request
+import subprocess
+import webbrowser
 import requests
 import bs4
-import webbrowser
 import re
-import subprocess
-from urllib import request
-from urllib.parse import quote
-import urllib.request
-#import html2text
+import os
 
 
-# Чистит фразу от ключевых слов
-def cleanphrase(statement, spisok):
-    for x in spisok:
-        statement = statement.replace(x, '')
+def clean_phrase(statement, words_list):
+    """
+    Cleans keywords in a phrase
+
+    :param statement: phrase
+    :param words_list: keywords
+    :return: clean phrase
+    """
+    for word in words_list:
+        statement = statement.replace(word, '')
     statement = statement.strip()
     return statement
 
 
-# Функция дающая случайный анекдот
-def anekdot():
-    s = requests.get('http://anekdotme.ru/random')
-    b = bs4.BeautifulSoup(s.text, "html.parser")
-    p = b.select('.anekdot_text')
-    s = (p[0].getText().strip())
-    reg = re.compile('[^0-9a-zA-Zа-яА-я .,!?-]')
-    s = reg.sub('', s)
-    return s
+def tell_joke():
+    """
+    A function that gives a random joke (anecdote)
+
+    :return: joke from site
+    """
+    joke = requests.get('http://anekdotme.ru/random')
+    joke_parser = bs4.BeautifulSoup(joke.text, "html.parser")
+    parsed_joke = joke_parser.select('.anekdot_text')
+    joke = (parsed_joke[0].getText().strip())
+    reg_ex = re.compile('[^0-9a-zA-Zа-яА-я .,!?-]')
+    joke = reg_ex.sub('', joke) 
+    return joke
 
 
-# Открыть сайт во внешнем браузере
-def openurl(url):
+def write_in_notepad(phrase):
+    pass
+
+
+def assistant_answering_dialogue_phrase(phrase):
+    answer = 'Прожуй и скажи нормально!'
+    phrase = clean_phrase(phrase,
+                          ['кто', 'что', 'как', 'когда', 'зачем', 'сколько', 'какой'])
+
+    if (phrase.find("тебя") != -1) and (phrase.find("создал") != -1):
+        answer = 'Меня создал Невейков Андрей'
+
+    elif (phrase.find("как") != -1) and (phrase.find("тебя") != -1)\
+            and (phrase.find("зовут") != -1):
+        answer = 'Можете обращаться просто ассистент.'
+
+    elif ((phrase.find("сколько") != -1) and (phrase.find("тебе") != -1)
+          and (phrase.find("лет") != -1)) or ((phrase.find("твой") != -1)
+                                              and (phrase.find("возраст") != -1)):
+        answer = 'Можете обращаться просто ассистент.'
+
+    elif (phrase.find("какие") != -1) and (phrase.find("библиотеки") != -1)\
+            and (phrase.find("ты") != -1) and (phrase.find("используешь") != -1):
+        answer = '''Извините за акцент: urllib, subprocess, webbrowser,
+        requests, bs4, re, os, sqlite3, PyQt5, speech recognition,
+        threading, pyttsx3, signal, sys'''
+
+    elif (phrase.find("такое") != -1) and ((phrase.find("ооп") != -1)
+                                           or (phrase.find("офп") != -1)
+                                           or (phrase.find("о о п") != -1)
+                                           or (phrase.find("о п") != -1)):
+        answer = '''
+        Объектно-ориентированное программирование — методология программирования,
+        основанная на представлении программы в виде совокупности объектов, 
+        каждый из которых является экземпляром определённого класса, 
+        а классы образуют иерархию наследования.
+        '''
+
+    elif (phrase.find("такое") != -1) and (phrase.find("паттерн") != -1) \
+            and (phrase.find("проектирования") != -1):
+        answer = '''
+        Паттерн проектирования - это повторяемая архитектурная конструкция,
+        представляющая собой решение проблемы проектирования в рамках
+        некоторого часто возникающего контекста.
+        '''
+
+    return answer
+
+
+def open_url(url):
+    """
+    Function that opens the site in a browser
+
+    :param url: link to site
+    :return: nothing, just open site
+    """
     webbrowser.open(url)
 
 
-# Запускает внешнюю команду ОС
-def osrun(cmd):
-    PIPE = subprocess.PIPE
-    p = subprocess.Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=subprocess.STDOUT)
+def os_run(cmd):
+    """
+    Runs an external OS command to
+    run a standard application as a subprocess
+
+    :param cmd: Abbreviated notation for command line
+    :return: nothing, just create a subprocess and runs an application
+    """
+    pipe = subprocess.PIPE
+    p = subprocess.Popen(cmd, shell=True, stdin=pipe, stdout=pipe, stderr=subprocess.STDOUT)
 
 
-def zapusti(statement):
-    ot = 'Такой команды я пока не знаю'
-    statement = cleanphrase(statement, ['запусти', 'запустить'])
-    if (statement.find("калькулятор") != -1) or (statement.find("calculator") != -1):
-        osrun('calc')
-        ot = 'Калькулятор запущен'
-    if (statement.find("блокнот") != -1) or (statement.find("notepad") != -1):
-        osrun('notepad')
-        ot = 'Блокнот запущен'
-    if (statement.find("paint") !=- 1) or (statement.find("паинт") != -1):
-        osrun('mspaint')
-        ot = 'Графический редактор запущен'
-    if (statement.find("browser") != -1) or (statement.find("браузер") != -1):
-        openurl('http://google.ru')
-        ot = 'Запускаю браузер'
-    if (statement.find("проводник") != -1) or (statement.find("файловый менеджер") != -1):
-        osrun('explorer')
-        ot = 'Проводник запущен'
-    return ot
+def start_application(statement):
+    """
+    The function responsible for selecting the desired application to run
+
+    :param statement: phrase
+    :return: reply to a chat with an assistant
+    """
+    answer = 'Это команде меня не научили'
+    statement = clean_phrase(statement, ['запусти', 'запустить'])
+
+    if (statement.find("торент") != -1) or (statement.find("торрент") != -1) \
+            or (statement.find("медиагет") != -1) or (statement.find("mediaget") != -1):
+        os.startfile('C:\\Users\\User\\MediaGet2\\mediaget.exe')
+        answer = 'Торент запущен'
+
+    elif ((statement.find("visual") != -1) or (statement.find("визуал") != -1)
+          or (statement.find("вижуал") != -1)) \
+            and ((statement.find("studio") != -1) or (statement.find("студио") != -1)):
+        os.startfile("E:\\VS\\Common7\\IDE\\devenv.exe")
+        answer = 'Visual Studio запущен'
+
+    elif ((statement.find("sublime") != -1) or (statement.find("саблайм") != -1)) \
+            and ((statement.find("text") != -1) or (statement.find("текст") != -1)):
+        os.startfile("E:\\Sublime Text 3\\sublime_text.exe")
+        answer = 'Sublime text запущен'
+
+    elif (statement.find("скайп") != -1) or (statement.find("skype") != -1):
+        os.startfile("C:\\Program Files (x86)\\Microsoft\\Skype for Desktop\\Skype.exe")
+        answer = 'Skype запущен'
+
+    elif (statement.find("телеграм") != -1) or (statement.find("telegram") != -1):
+        os.startfile("D:\\Telegram\\Telegram Desktop\\Telegram.exe")
+        answer = 'Telegram запущен'
+
+    elif (statement.find("гугл") != -1) or (statement.find("гугол") != -1) \
+            or (statement.find("google") != -1):
+        os.startfile("C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe")
+        answer = 'Google запущен'
+
+    elif (statement.find("калькулятор") != -1) or (statement.find("calculator") != -1):
+        os_run('calc')
+        answer = 'Калькулятор запущен'
+
+    elif (statement.find("блокнот") != -1) or (statement.find("notepad") != -1):
+        os_run('notepad')
+        answer = 'Блокнот запущен'
+
+    elif (statement.find("paint") != -1) or (statement.find("паинт") != -1):
+        os_run('mspaint')
+        answer = 'Paint запущен'
+
+    elif (statement.find("browser") != -1) or (statement.find("браузер") != -1):
+        open_url('http://google.ru')
+        answer = 'Запускаю браузер'
+
+    elif (statement.find("проводник") != -1) or (statement.find("файловый менеджер") != -1):
+        os_run('explorer')
+        answer = 'Проводник запущен'
+
+    elif (statement.find("гитхаб") != -1) or (statement.find("github") != -1):
+        subprocess.run(['C:\\Users\\User\\AppData\\Local\\GitHubDesktop\\GitHubDesktop.exe'])
+        answer = 'GitHub Desktop запущен'
+
+    return answer
 
 
-# Даёт iframe код ютуб ролика по любому поисковому запросу    
-def findyoutube(x):
-    x = cleanphrase(x, ['хочу', 'на ютубе', 'на ютюбе', 'на ютуб', 'ютюб', 'на youtube', 'на you tube', 'на youtub', 'youtube', 'ютуб', 'ютубе', 'посмотреть', 'смотреть'])
-    zz = []
-    sq = 'http://www.youtube.com/results?search_query='+quote(x)
-    doc = urllib.request.urlopen(sq).read().decode('cp1251', errors='ignore')
+def find_on_tube(phrase):
+    """
+    Gives link on YouTube video code for any search query
+
+    :param phrase: youtube video request
+    :return: link to the first video in the issue
+    """
+    phrase = clean_phrase(phrase,
+                          ['хочу', 'на ютубе', 'на ютюбе', 'на ютуб', 'ютюб', 'на youtube',
+                           'на you tube', 'на youtub', 'youtube', 'ю туб', 'ютубе',
+                           'посмотреть', 'смотреть'])
+    tmp_list_for_ends_of_links = []
+    compound_query = 'http://www.youtube.com/results?search_query='+quote(phrase)
+    doc = urllib.request.urlopen(compound_query).read().decode('cp1251', errors='ignore')
     match = re.findall(r"\?v\=(.+?)\"", doc)
     if not(match is None):
-        for ii in match:
-            if len(ii)<25:
-                zz.append(ii)
-    zz2 = dict(zip(zz, zz)).values()
-    zz3 = []
-    for qq in zz2:
-        zz3.append(qq)
-    s = zz3[0]
-    s = 'https://www.youtube.com/watch?v='+s+'?autoplay=1'
-    return s
+        for link_collector in match:
+            if len(link_collector) < 25:
+                tmp_list_for_ends_of_links.append(link_collector)
+
+    tmp_dict_for_ends_of_links = dict(
+        zip(tmp_list_for_ends_of_links, tmp_list_for_ends_of_links)).values()
+    tmp_list_for_link = []
+    for ends_of_links in tmp_dict_for_ends_of_links:
+        tmp_list_for_link.append(ends_of_links)
+    compound_youtube_link = tmp_list_for_link[0]
+    compound_youtube_link = 'https://www.youtube.com/watch?v=' +\
+                            compound_youtube_link+'?autoplay=1'
+    return compound_youtube_link
 
 
-def mysearch(z):
-    doc = urllib.request.urlopen('http://go.mail.ru/search?fm=1&q='+quote(z)).read().decode('unicode-escape', errors = 'ignore')
-    sp = re.compile('title":"(.*?)orig').findall(doc)
-    mas1 = []
-    mas2 = []
-    for x in sp:
-        if (x.rfind('wikihow') == -1) and (x.rfind('an.yandex') == -1) and (x.rfind('wikipedia') == -1) and (x.rfind('otvet.mail.ru') == -1) and (x.rfind('youtube')==-1) and(x.rfind('.jpg')==-1) and (x.rfind('.png')==-1) and (x.rfind('.gif')==-1):
-            a = x.replace(',','')
-            a = a.replace('"','')
-            a = a.replace('<b>','')
-            a = a.replace('</b>','')
-            a = a.split('url:')
-            if len(a) > 1:
-                z = a[0].split('}')
-                mas1.append(z[0])
-                z = a[1].split('}')
-                z = z[0].split('title')
-                mas2.append(z[0])
-    return mas2
+def browser_search(user_request):
+    """
+    A function that finds links to sites that match the query
 
+    :param user_request: browser search request
+    :return: list of several links to suitable sites
+    """
+    doc = urllib.request.urlopen(
+        'http://go.mail.ru/search?fm=1&q=' + quote(user_request)).read().decode(
+        'unicode-escape', errors='ignore')
+    parsed_page = re.compile('title":"(.*?)orig').findall(doc)
+    tmp_search_result = []
+    search_result = []
+    
+    for elements in parsed_page:
+        if (elements.rfind('wikihow') == -1) and (elements.rfind('an.yandex') == -1)\
+                and (elements.rfind('wikipedia') == -1) and (elements.rfind('otvet.mail.ru') == -1)\
+                and (elements.rfind('youtube') == -1) and (elements.rfind('.jpg') == -1)\
+                and (elements.rfind('.png') == -1) and (elements.rfind('.gif') == -1):
+            answer = elements.replace(',', '')
+            answer = answer.replace('"', '')
+            answer = answer.replace('<b>', '')
+            answer = answer.replace('</b>', '')
+            answer = answer.split('url:')
 
+            if len(answer) > 1:
+                user_request = answer[0].split('}')
+                tmp_search_result.append(user_request[0])
+                user_request = answer[1].split('}')
+                user_request = user_request[0].split('title')
+                search_result.append(user_request[0])
 
-
-
-
+    return search_result

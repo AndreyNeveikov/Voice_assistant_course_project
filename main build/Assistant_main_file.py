@@ -1,267 +1,340 @@
-from PyQt5 import QtCore, QtGui
+# Interface
 from PyQt5.QtWidgets import QLabel, QApplication, QMainWindow
 from PyQt5.QtWebEngineWidgets import *
+from PyQt5 import QtCore, QtGui
+from PyQt5.QtGui import QIcon
+
+# Functional
+import speech_recognition as sr
+import threading
+import pyttsx3
+import signal
 import sys
 import os
-import threading
-import speech_recognition as sr
-import signal
-import pyttsx3
-import json
-import apiai
+
+# Files
 import Assistant_functions
+import Assistant_database
 
 
-# Инициализируем SAPI5
-engine = pyttsx3.init()
-# Получаем список голосов
-voices = engine.getProperty('voices')
-# Устанавливаем русский язык
-engine.setProperty('voice', 'ru')
+engine = pyttsx3.init()    # Initialize SAPI5
+voices = engine.getProperty('voices')    # Get a list of available votes
+engine.setProperty('voice', 'ru')    # Set the Russian language
+engine.setProperty('rate', 200)    # Set voice speed
 
-for voice in voices:
+for voice in voices:    # Select the desired voice
     if voice.name == 'Anna':
         engine.setProperty('voice', voice.id)
-# Скорость чтения
-engine.setProperty('rate', 190)
 
-# Получаем html шаблон для сообщений в окне чата
+# Get the html page for messages in the chat window
 html_code = '<div class="robot">Чем я могу помочь?</div>'
-f = open('index.html', 'r', encoding='UTF-8')
-html_template = f.read()
-f.close()
+file = open('chat.html', 'r', encoding='UTF-8')
+html_template = file.read()
+file.close()
 
-# Получаем html шаблон help
-f = open('help.html', 'r', encoding='UTF-8')
-html_code_2 = f.read()
-f.close()
-
-
-# Функция, которая обращается к Dialogflow и получает ответ
-def ai_message(s):
-    # Токен API к Dialogflow (оставьте этот или натренируйте свою модель)
-    request = apiai.ApiAI('7f01246612e64e3f89264a85a965ddd3').text_request()
-    # На каком языке будет послан запрос
-    request.lang = 'ru'
-    # ID Сессии диалога (нужно, чтобы потом учить бота)
-    request.session_id = 'voice_assistant'
-    # Посылаем запрос к ИИ с сообщением от юзера
-    request.query = s 
-    response_json = json.loads(request.getresponse().read().decode('utf-8'))
-    # Разбираем JSON и вытаскиваем ответ
-    response = ''
-    response = response_json['result']['fulfillment']['speech']
-    # Если есть ответ от бота - выдаём его,
-    # если нет - бот его не понял
-    if response:
-        return response
-    else:
-        return 'Я Вас не совсем поняла!'
+# Get the html page feature_list
+file = open('feature_list.html', 'r', encoding='UTF-8')
+html_code_2 = file.read()
+file.close()
 
 
-answer = ''
-listen = ''
-request = ''
-not_listen = ''
-ispeak = ''
-
-# Объявляем распознавалку речи от Google
-r = sr.Recognizer()
+r = sr.Recognizer()     # Variable for speech recognition from Google
 
 
-# Отдельный поток 
 def thread(my_func):
+    """
+    Function that creates a separate thread
+    (used as decorator)
+
+    :param my_func: a function to run on a new thread
+    :return: wrapper
+    """
     def wrapper(*args, **kwargs):
         my_thread = threading.Thread(target=my_func, args=args, kwargs=kwargs)
         my_thread.start()
     return wrapper
 
 
-# Функции для сигналов между потоками
-def signal_handler(signal, frame):
-    global interrupted
-    interrupted = True
+global interrupted_thread
+
+
+def signal_handler(thread_signal, frame):
+    """
+    Function for signals between threads
+
+    :param thread_signal: thread signal
+    :param frame: signal handler
+    :return: nothing, just changes the state of the thread
+    """
+    global interrupted_thread
+    interrupted_thread = True
 
 
 def interrupt_callback():
-    global interrupted
-    return interrupted
+    """
+    A function that accesses an interrupted thread
+
+    :return: a thread interrupted by another thread
+    """
+    global interrupted_thread
+    return interrupted_thread
 
 
-# Функция активизирует Google Speech Recognition для распознавания команд
 @thread
-def listencommand():
+def listen_command():
+    """
+    Activates Speech Recognition to recognize commands
+
+    :return: recognized phrase or handled error
+    """
     global listen
     global request
     global not_listen
-    # Следим за состоянием ассистента - слушает она или говорит
-    listen.emit([1])
-    # Слушаем микрофон
-    with sr.Microphone() as source:
-        #r.adjust_for_ambient_noise(source, duration=1)
+
+    listen.emit([1])    # Monitoring the state of the assistant (listens or speaks)
+    with sr.Microphone() as source:     # Listen to the microphone
         audio = r.listen(source)
     try:
-        # Отправляем запись с микрофона гуглу, получаем распознанную фразу
-        f = r.recognize_google(audio, language="ru-RU").lower()
-        # Меняем состояние ассистента со слушания на ответ
-        listen.emit([2])
-        # Отправляем распознанную фразу на обработку в функцию myvopros
-        vopros.emit([f])
-    # В случае ошибки меняем состояние ассистента на "не расслышал"
+        # Send the record to Google, get the recognized phrase
+        voice_record = r.recognize_google(audio, language="ru-RU").lower()
+        listen.emit([2])    # Change the assistant's state from listening to answering
+        # Send the recognized phrase for processing to the response_to_user_request function
+        request.emit([voice_record])
+    # In case of an error, change the state of the assistant to "didn't hear"
     except sr.UnknownValueError:
-        print("Робот не расслышал фразу")
-        dontlisten.emit(['00'])
-    except sr.RequestError as e:
-        print("Ошибка сервиса; {0}".format(e))
+        print("Ассистент не расслышал фразу")
+        not_listen.emit(['00'])
+    except sr.RequestError as error:
+        print("Ошибка сервиса; {0}".format(error))
 
 
-signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGINT, signal_handler)    # Thread signal processing
+
+global p_urls
+global p_cmd
 
 
-# Графический интерфейс PyQt 
-class W(QMainWindow):
-    # Объявляем сигналы, которые приходят от асинхронных функций
-    my_signal = QtCore.pyqtSignal(list, name='my_signal')
-    my_listen = QtCore.pyqtSignal(list, name='my_listen')
-    my_vopros = QtCore.pyqtSignal(list, name='my_vopros')
-    my_dontlisten = QtCore.pyqtSignal(list, name='my_dontlisten')
+# Blanks for the state of threads
+answer = ''
+listen = ''
+request = ''
+not_listen = ''
+speaking = ''
+
+
+class ProgramWindow(QMainWindow):
+    """
+    Create a PyQt interface
+    """
+    # Declare signals that come from asynchronous functions
+    thread_signal = QtCore.pyqtSignal(list, name='thread_signal')
+    assistant_listen = QtCore.pyqtSignal(list, name='assistant_listen')
+    user_request = QtCore.pyqtSignal(list, name='user_request')
+    unrecognized_speech = QtCore.pyqtSignal(list, name='unrecognized_speech')
 
     def __init__(self, *args):
         super().__init__()
+        self.setWindowIcon(QIcon("img\\app_icon.png"))
         self.setAnimated(False)
         self.flag = True
         self.centralwidget = QMainWindow()
         self.centralwidget.setObjectName("centralwidget")
         self.setCentralWidget(self.centralwidget)
-        # Label в который мы загрузим картинку с девушкой
+        # Label in which we will load pictures
         self.label = QLabel(self.centralwidget)
-        # Прикрепляем к Label функцию обработки клика
+        # Attach a click handling function to the Label
         self.label.installEventFilter(self)
-        # Настраиваем вид курсора на картинке
+        # Customize the appearance of the cursor on the picture
         self.label.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        # Позиционируем Label внутри окна
+        # Position the Label inside the window
         self.label.setGeometry(QtCore.QRect(2, 2, 400, 300))
-        # Объявляем элемент QWebEngineView для отображения html странички с чатом
+        # Declare the QWebEngineView element to display the html page with the chat
         self.browser = QWebEngineView(self.centralwidget)
-        # Объявляем элемент QWebEngineView для отображения видео с ютуба, текстов и веб страниц
+        # Declaring the QWebEngineView element to display YouTube videos, texts and web pages
         self.browser2 = QWebEngineView(self.centralwidget)
-        # Позиционируем QWebEngineView внутри окна
+        # Position the QWebEngineView inside the window
         self.browser.setGeometry(QtCore.QRect(2, 305, 400, 300))
         self.browser2.setGeometry(QtCore.QRect(405, 2, 930, 603))
-        # Загружаем в QWebEngineView html документ с чатом
+
+        # Load the html page with the chat into QWebEngineView
         global html_template
         global html_code
         global html_code_2
-        htmlresult=htmltemplate.replace('%code%',htmlcode)
-        self.browser.setHtml(htmlresult, QtCore.QUrl("file://"))
+
+        html_result = html_template.replace('%code%', html_code)
+        self.browser.setHtml(html_result, QtCore.QUrl("file://"))
         self.browser.show()
-        self.browser2.setHtml(htmlcode2, QtCore.QUrl("file://"))
+        self.browser2.setHtml(html_code_2, QtCore.QUrl("file://"))
         self.browser2.show()  
-        self.label.setText("<center><img src='file:///"+os.getcwd()+"/img/5.jpg'></center>")
-        # Соединяем сигналы и функции класса
+        self.label.setText("<center><img src='file:///"+os.getcwd() +
+                           "/img/img_greetings.jpg'></center>")
+
+        # Connect signals and class functions
         global answer
-        otvet = self.my_signal
+        answer = self.thread_signal
         global listen
-        listen = self.my_listen
+        listen = self.assistant_listen
         global not_listen
-        dontlisten = self.my_dontlisten
+        not_listen = self.unrecognized_speech
         global request
-        vopros = self.my_vopros
-        self.my_listen.connect(self.mylisten, QtCore.Qt.QueuedConnection)
-        self.my_vopros.connect(self.response_to_user_request, QtCore.Qt.QueuedConnection)
-        self.my_dontlisten.connect(self.response_to_unrecognized_speech, QtCore.Qt.QueuedConnection)
+        request = self.user_request
+        self.assistant_listen.connect(self.picture_change, QtCore.Qt.QueuedConnection)
+        self.user_request.connect(self.response_to_user_request, QtCore.Qt.QueuedConnection)
+        self.unrecognized_speech.connect(self.response_to_unrecognized_speech, QtCore.Qt.QueuedConnection)
 
-    # Обработка клика по картинке с девушкой    
-    def eventFilter(self,obj,e):
-        if e.type() == 2:
-            btn = e.button()
-            if btn == 1:
-                listencommand()
-            elif btn == 2:
-                self.label.setText("<center><img src='file:///"+os.getcwd()+"/img/5.jpg'></center>")
-        return super(QMainWindow, self).eventFilter(obj, e)
+    # Handling a click on the image
+    def eventFilter(self, obj, event):
+        """
+        Function that handles clicks on an image
 
-    # Смена картинки в зависимости от того слушает она или говорит
-    def mylisten(self, data):
+        :param obj: the object on which the action is performed
+        :param event: type of event
+        :return: changed object
+        """
+        if event.type() == 2:
+            mouse_button = event.button()
+            if mouse_button == 1:
+                listen_command()
+            elif mouse_button == 2:
+                self.label.setText("<center><img src='file:///"+os.getcwd()+"/img/img_greetings.jpg'></center>")
+        return super(QMainWindow, self).eventFilter(obj, event)
+
+    def picture_change(self, data):
+        """
+        Function of changing the picture depending on
+        whether the assistant is listening or talking
+
+        :param data: assistant mode
+        :return: nothing, just change an image of the assistant's mode
+        """
         if data[0] == 1:
-            self.label.setText("<center><img src='file:///"+os.getcwd()+"/img/6.jpg'></center>")
+            # Assistant listens
+            self.label.setText("<center><img src='file:///" + os.getcwd() +
+                               "/img/img_listen.jpg'></center>")
         if data[0] == 2:
-            self.label.setText("<center><img src='file:///"+os.getcwd()+"/img/5.jpg'></center>")
+            # Assistant speaks
+            self.label.setText("<center><img src='file:///" + os.getcwd() +
+                               "/img/img_greetings.jpg'></center>")
 
-    # Добавление в html чат фразы ассистента
     def adding_response_to_chat_by_assistant(self, phrase):
+        """
+        Adding an assistant's phrase to the html chat
+
+        :param phrase: assistant answer
+        :return: nothing, writes assistant answer in the html chat
+        """
         global html_template
         global html_code
-        htmlcode = '<div class="robot">'+phrase+'</div>'+htmlcode
-        htmlresult = htmltemplate.replace('%code%',htmlcode)
-        self.browser.setHtml(htmlresult, QtCore.QUrl("file://"))
+        html_code = '<div class="robot">' + phrase + '</div>' + html_code
+        html_result = html_template.replace('%code%', html_code)
+        self.browser.setHtml(html_result, QtCore.QUrl("file://"))
         self.browser.show()
 
-    # Добавление в html чат фразы пользователя
     def adding_query_to_chat_by_user(self, phrase):
+        """
+        Adding a user phrase to the html chat
+
+        :param phrase: assistant request
+        :return: nothing, writes user request in the html chat
+        """
         global html_template
         global html_code
-        htmlcode = '<div class="you">'+phrase+'</div>'+htmlcode
-        htmlresult = htmltemplate.replace('%code%',htmlcode)
-        self.browser.setHtml(htmlresult, QtCore.QUrl("file://"))
+        html_code = '<div class="you">' + phrase + '</div>' + html_code
+        html_result = html_template.replace('%code%', html_code)
+        self.browser.setHtml(html_result, QtCore.QUrl("file://"))
         self.browser.show()
 
-    # Произносим ответ вслух синтезом речи
-    def pronounce_assistant_answer(self, phrase):
+    @staticmethod
+    def pronounce_assistant_answer(phrase):
+        """
+        Say the phrase aloud with speech synthesis
+
+        :param phrase: written phrase
+        :return: nothing
+        """
         global engine
         engine.say(phrase)
         engine.runAndWait()
         engine.stop()
- 
-    # Функция в которой решаем что отвечать на фразы пользователя    
+
     def response_to_user_request(self, data):
-        global predurls
-        global predcmd
-        # Получаем фразу от пользователя
-        vp = data[0].lower()
-        # Отображаем её в чате
-        self.adding_response_to_chat_by_assistant(vp)
-        # Ответ по умолчанию
-        assistant_answer = 'Я не поняла запрос'
+        """
+        Answer selection function
+
+        :param data: list of keywords
+        :return: assistant answer
+        """
+        global p_urls
+        global p_cmd
+
+        phrase = data[0].lower()    # Get phrase from user
+        self.adding_response_to_chat_by_assistant(phrase)   # Display the user's phrases in the chat
+        assistant_answer = 'Я не поняла запрос'    # Default response
+
         try:
-            # Выполняем разные действия в зависимости от наличия ключевых слов фо фразе
-            if vp == 'пока' or vp == 'выход' or vp == 'выйти' or vp == 'до свидания':
+            # Perform an action depending on the presence of keywords in the phrase
+            if 'ответь' in phrase:
+                assistant_answer = Assistant_functions.assistant_answering_dialogue_phrase(phrase)
+
+            elif ((phrase.find("база") != -1) and (phrase.find("данных") != -1)) \
+                    or (((phrase.find("пароль") != -1) or (phrase.find("логин") != -1))
+                        or ((phrase.find("добавить") != -1) and (phrase.find("данные") != -1))
+                        or ((phrase.find("записать") != -1) and (phrase.find("данные") != -1)
+                            and (phrase.find("сайта") != -1))):
+                assistant_answer = Assistant_database.selecting_database_function(phrase)
+
+            elif (phrase.find("запустить") != -1) or (phrase.find("запусти") != -1):
+                assistant_answer = Assistant_functions.start_application(phrase)
+
+            elif ((phrase.find("youtube") != -1) or (phrase.find("ютюб") != -1) or
+                  (phrase.find("ютуб") != -1) or (phrase.find("you tube") != -1))\
+                    and (phrase.find("смотреть") != -1):
+                self.browser2.load(QtCore.QUrl(Assistant_functions.find_on_tube(phrase)))
+                assistant_answer = 'Вот видео.'
+
+            elif ((phrase.find("анекдот") != -1) or (phrase.find("шутка") != -1) or
+                  (phrase.find("анек") != -1) or (phrase.find("прикол") != -1))\
+                    or (phrase.find("смешной") != -1):
+                assistant_answer = Assistant_functions.tell_joke()
+
+            elif (phrase.find("слушать") != -1) and ((phrase.find("песн") != -1) or (phrase.find("песню") != -1)):
+                self.browser2.load(QtCore.QUrl(Assistant_functions.find_on_tube(phrase)))
+                assistant_answer = 'Вот песня.'
+
+            elif ((phrase.find("найти") != -1) or (phrase.find("найди") != -1)) \
+                    and not(phrase.find("статью") != -1):
+                user_request = Assistant_functions.clean_phrase(phrase,
+                                                                ['найти', 'найди', 'про', 'про то', 'о том'])
+                question = Assistant_functions.browser_search(user_request)
+                self.browser2.load(QtCore.QUrl(question[0]))
+                assistant_answer = 'Ответ найден'
+
+            elif phrase == 'пока' or phrase == 'выход' or phrase == 'выйти' or phrase == 'до свидания':
                 assistant_answer = 'Ещё увидимся!'
                 self.adding_query_to_chat_by_user(assistant_answer)
                 self.pronounce_assistant_answer(assistant_answer)
                 sys.exit(app.exec_())
-            elif 'анекдот' in vp:
-                assistant_answer = Assistant_functions.anekdot()
-            elif 'запусти' in vp:
-                assistant_answer = Assistant_functions.zapusti(vp)
-            elif ((vp.find("youtube") != -1) or (vp.find("ютюб") != -1) or (vp.find("ютуб") != -1) or (vp.find("you tube") != -1)) and (vp.find("смотреть") != -1):
-                self.browser2.load(QtCore.QUrl(Assistant_functions.findyoutube(vp)))
-                assistant_answer = 'Вот видео.'
-            elif (vp.find("слушать") != -1) and (vp.find("песн") != -1):
-                self.browser2.load(QtCore.QUrl(Assistant_functions.findyoutube(vp)))
-                assistant_answer = 'Вот песня.'
-            elif ((vp.find("найти") != -1) or (vp.find("найди") != -1)) and not(vp.find("статью") != -1):
-                user_request = Assistant_functions.cleanphrase(vp, ['найти', 'найди', 'про', 'про то', 'о том'])
-                q = Assistant_functions.mysearch(user_request)
-                self.browser2.load(QtCore.QUrl(q[0]))
-                assistant_answer = 'Ответ найден'
+
         except():
-            # Если ключевых слов не нашли, используем Dialogflow
-            assistant_answer = ai_message(vp)
-        # Добавляем ответ в чат
-        self.adding_query_to_chat_by_user(assistant_answer)
-        # Читаем ответ вслух
-        self.pronounce_assistant_answer(assistant_answer)
-        
-    # Функция меняет картинку если ассистент тебя не расслышал
-    def response_to_unrecognized_speech(self, data):
-        self.label.setText("<center><img src='file:///"+os.getcwd()+"/img/4.jpg'></center>")
+            assistant_answer = 'Я не поняла запрос'    # Default response
+
+        self.adding_query_to_chat_by_user(assistant_answer)    # Add response to the chat
+        self.pronounce_assistant_answer(assistant_answer)    # Speak out the answer
+
+    def response_to_unrecognized_speech(self, *args):
+        """
+        Function that changes the picture if the assistant did not hear you
+
+        :param args: QtCore.Qt.QueuedConnection
+        :return: nothing, just change the picture
+        """
+        self.label.setText("<center><img src='file:///"+os.getcwd() +
+                           "/img/img_response_to_unrecognized_speech.jpg'></center>")
 
 
-# Запускаем программу на выполнение    
+# Run the program
 app = QApplication([])
-window = W()
-# Размер окна
-window.resize(1340, 615)
+window = ProgramWindow()
+window.resize(1340, 615)    # Window size
 window.show()
 app.exec_()

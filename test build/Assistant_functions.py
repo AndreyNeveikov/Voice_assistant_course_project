@@ -39,14 +39,10 @@ def tell_joke():
     return joke
 
 
-def write_in_notepad(phrase):
-    pass
-
-
 def assistant_answering_dialogue_phrase(phrase):
     answer = 'Прожуй и скажи нормально!'
     phrase = clean_phrase(phrase,
-                          ['кто', 'что', 'как', 'когда', 'зачем', 'сколько', 'какой'])
+                          ['ответь', 'скажи'])
 
     if (phrase.find("тебя") != -1) and (phrase.find("создал") != -1):
         answer = 'Меня создал Невейков Андрей'

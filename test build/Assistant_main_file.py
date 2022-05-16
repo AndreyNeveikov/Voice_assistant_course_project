@@ -238,7 +238,7 @@ class ProgramWindow(QMainWindow):
     @staticmethod
     def pronounce_assistant_answer(phrase):
         """
-        Say the phrase aloud with speech synthesis
+        Redirects a phrase to the voiceover function
 
         :param phrase: written phrase
         :return: nothing

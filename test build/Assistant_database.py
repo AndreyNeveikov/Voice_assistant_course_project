@@ -1,9 +1,13 @@
+# Interface
+from tkinter import *
+
 # Functional
 import sqlite3
 import os
 
-
 # Files
+from tkinter import messagebox
+
 import Assistant_functions
 
 
@@ -50,51 +54,128 @@ def get_from_database(database_name, db_table_name, requested_website):
 def selecting_database_function(phrase):
     answer = 'Ошибка работы с базой данных'
     phrase = Assistant_functions.clean_phrase(phrase,
-                                              ['добавь', 'напомни', 'какой', 'пароль', 'логин'])
+                                              ['баз', 'данных'])
     if not os.path.exists(f'{DATABASE_NAME}'):
         create_database(DATABASE_NAME)
 
     if (phrase.find("базу") != -1) and \
             ((phrase.find("очисти") != -1) or (phrase.find("очистить") != -1)
              or (phrase.find("удали") != -1) or (phrase.find("удалить") != -1)):
+        path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'login_details.db')
+        os.remove(path)
+
+        create_database(DATABASE_NAME)
         answer = 'База данных очищена'
 
-    elif (phrase.find("добавь") != -1) and ((phrase.find("логин") != -1)
-                                            or (phrase.find("пароль") != -1)
-                                            or (phrase.find("сайн") != -1)
-                                            or (phrase.find("данные") != -1)):
-        insert_in_database(DATABASE_NAME, TABLE_NAME, ['1', '1', '1'])
-        answer = f'''Данные успешно добавлены!'''
+    elif ((phrase.find("добавь") != -1) or (phrase.find("добавить") != -1)
+          or (phrase.find("записать") != -1) or (phrase.find("записать") != -1))\
+            and ((phrase.find("логин") != -1) or (phrase.find("пароль") != -1)
+                 or (phrase.find("сайн") != -1) or (phrase.find("данные") != -1)):
+        input_authentication_data()
+        answer = """Данные успешно добавлены в базу,\nвы можете посмотреть ее с помощью голосовой команды."""
 
-    elif (phrase.find("напомни") != -1) or (phrase.find("какой") != -1) \
+    elif ((phrase.find("напомни") != -1) or (phrase.find("какой") != -1)) \
             and ((phrase.find("пароль") != -1) or (phrase.find("логин") != -1)):
-        answer = output_authentication_data()
+        output_authentication_data()
+        answer = 'Готово! Помните о безопасности ваших персональных данных!!!'
 
     return answer
 
 
 def output_authentication_data():
-    authentication_data = get_from_database(DATABASE_NAME, TABLE_NAME, website)
+    root = Tk()
 
-    tmp_text_file = open('tmp.txt', 'w')
-    print(f'''Ваши данные для аутентификации: 
-    
-    Название ресурса ----> {authentication_data[0]}
-    Ваш логин ----> {authentication_data[1]}
-    Ваш пароль ----> {authentication_data[2]}
-    ''', file=tmp_text_file)
-    tmp_text_file.close()
-    os.startfile('tmp.txt')
+    def btn_click():
+        site = str(site_input.get())
+        print(site)
+        authentication_data = get_from_database(DATABASE_NAME, TABLE_NAME, site)
+        login = str(authentication_data[1])
+        password = str(authentication_data[2])
+        print(login, password)
+        messagebox.showinfo(title='Данные', message=f'''Логин: {login}\
+        Пароль: {password}''')
 
-    answer = """Вы можете посмотреть данные в открывшемся файле,\nозвучивать их я не буду."""
-    return answer
+    root['bg'] = '#ffffff'
+    root.title('Будте осторожны со свой персональной информацией')
+    root.wm_attributes('-alpha', 0.99)
+    root.geometry('600x500')
+
+    root.resizable(width=False, height=False)
+
+    canvas = Canvas(root, height=600, width=500)
+    canvas.pack()
+
+    frame = Frame(root, bg='white')
+    frame.place(relx=0.0, rely=0.0, relwidth=1.0, relheight=1.0)
+
+    title = Label(frame, text='Непоказывайте эти данные третьим лицам', bg='white', font=40)
+    title.pack()
+
+    btn_exit = Button(frame, text='Выйти', command=root.destroy)
+    btn_exit.pack()
+
+    btn = Button(frame, text='Найти', bg='red', command=btn_click)
+    btn.pack()
+
+    site_input = Entry(frame, bg='white')
+    site_input.pack()
+
+    root.mainloop()
+
+
+def input_authentication_data():
+
+    root = Tk()
+
+    def btn_click():
+        site = site_input.get()
+        login = login_input.get()
+        password = password_input.get()
+
+        insert_in_database(DATABASE_NAME, TABLE_NAME, [site, login, password])
+
+    root['bg'] = '#ffffff'
+    root.title('Будте осторожны со свой персональной информацией')
+    root.wm_attributes('-alpha', 0.99)
+    root.geometry('600x500')
+
+    root.resizable(width=False, height=False)
+
+    canvas = Canvas(root, height=600, width=500)
+    canvas.pack()
+
+    frame = Frame(root, bg='white')
+    frame.place(relx=0.0, rely=0.0, relwidth=1.0, relheight=1.0)
+
+    title = Label(frame, text='Непоказывайте эти данные третьим лицам', bg='white', font=40)
+    title.pack()
+
+    btn_exit = Button(frame, text='Выйти', command=root.destroy)
+    btn_exit.pack()
+
+    btn = Button(frame, text='Сохранить', bg='red', command=btn_click)
+    btn.pack()
+
+    site_input = Entry(frame, bg='white')
+    site_input.pack()
+
+    login_input = Entry(frame, bg='white')
+    login_input.pack()
+
+    password_input = Entry(frame, bg='white', show='*')
+    password_input.pack()
+
+    root.mainloop()
 
 
 website = 'you tube'
 website_data = ['you tube', '0000', '1111']
 
-# insert_in_database(DATABASE_NAME, TABLE_NAME, website_data)
-# res = get_from_database(DATABASE_NAME, TABLE_NAME, website)
-# print("res[0][0]", res[0][0], "\nres[0]", res[0], "\nres", res)
 
-output_authentication_data()
+#insert_in_database(DATABASE_NAME, TABLE_NAME, website_data)
+#res = get_from_database(DATABASE_NAME, TABLE_NAME, website)
+
+#output_authentication_data()
+#print("res[0][0]", res[0][0], "\nres[0]", res[0], "\nres", res)
+
+#input_authentication_data2()

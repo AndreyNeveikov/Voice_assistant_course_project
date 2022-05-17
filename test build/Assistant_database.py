@@ -102,11 +102,11 @@ def output_authentication_data():
 
     root.resizable(width=False, height=False)
 
-    canvas = Canvas(root, height=600, width=500)
-    canvas.pack()
-
-    frame = Frame(root, bg='white')
+    frame = Canvas(root, bg='white')
     frame.place(relx=0.0, rely=0.0, relwidth=1.0, relheight=1.0)
+
+    img_png = PhotoImage(file='img/data_security.png')
+    frame.create_image(300, 300, image=img_png)
 
     title = Label(frame, text='Непоказывайте эти данные третьим лицам', bg='white', font=40)
     title.pack()
@@ -141,17 +141,17 @@ def input_authentication_data():
 
     root.resizable(width=False, height=False)
 
-    canvas = Canvas(root, height=600, width=500)
-    canvas.pack()
-
-    frame = Frame(root, bg='white')
+    frame = Canvas(root, bg='white')
     frame.place(relx=0.0, rely=0.0, relwidth=1.0, relheight=1.0)
+
+    img_png = PhotoImage(file='img/data_security.png')
+    frame.create_image(300, 300, image=img_png)
 
     title = Label(frame, text='Непоказывайте эти данные третьим лицам', bg='white', font=40)
     title.pack()
 
     btn_exit = Button(frame, text='Выйти', command=root.destroy)
-    btn_exit.pack()
+    btn_exit.pack()#expand=1, anchor=W)
 
     btn = Button(frame, text='Сохранить', bg='red', command=btn_click)
     btn.pack()
@@ -175,7 +175,7 @@ website_data = ['you tube', '0000', '1111']
 #insert_in_database(DATABASE_NAME, TABLE_NAME, website_data)
 #res = get_from_database(DATABASE_NAME, TABLE_NAME, website)
 
-#output_authentication_data()
+output_authentication_data()
 #print("res[0][0]", res[0][0], "\nres[0]", res[0], "\nres", res)
 
-#input_authentication_data2()
+#input_authentication_data()

@@ -40,7 +40,7 @@ def tell_joke():
 
 
 def assistant_answering_dialogue_phrase(phrase):
-    answer = 'Прожуй и скажи нормально!'
+    answer = 'Пожалуйста, повторите фразу!'
     phrase = clean_phrase(phrase,
                           ['ответь', 'скажи'])
 

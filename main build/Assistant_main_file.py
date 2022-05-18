@@ -29,12 +29,12 @@ for voice in voices:    # Select the desired voice
 # Get the html page for messages in the chat window
 html_code = '<div class="robot">Чем я могу помочь?</div>'
 file = open('chat.html', 'r', encoding='UTF-8')
-html_template = file.read()
+html_chat = file.read()
 file.close()
 
 # Get the html page feature_list
 file = open('feature_list.html', 'r', encoding='UTF-8')
-html_code_2 = file.read()
+feature_list_html = file.read()
 file.close()
 
 
@@ -157,9 +157,9 @@ class ProgramWindow(QMainWindow):
         self.browser2.setGeometry(QtCore.QRect(405, 2, 930, 603))
 
         # Load the html page with the chat into QWebEngineView
-        global html_template
+        global html_chat
         global html_code
-        global html_code_2
+        global feature_list_html
 
         html_result = html_template.replace('%code%', html_code)
         self.browser.setHtml(html_result, QtCore.QUrl("file://"))
@@ -223,7 +223,7 @@ class ProgramWindow(QMainWindow):
         :param phrase: assistant answer
         :return: nothing, writes assistant answer in the html chat
         """
-        global html_template
+        global html_chat
         global html_code
         html_code = '<div class="robot">' + phrase + '</div>' + html_code
         html_result = html_template.replace('%code%', html_code)
@@ -237,7 +237,7 @@ class ProgramWindow(QMainWindow):
         :param phrase: assistant request
         :return: nothing, writes user request in the html chat
         """
-        global html_template
+        global html_chat
         global html_code
         html_code = '<div class="you">' + phrase + '</div>' + html_code
         html_result = html_template.replace('%code%', html_code)

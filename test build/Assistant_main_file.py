@@ -20,12 +20,12 @@ import Assistant_database
 # Get the html page for messages in the chat window
 html_code = '<div class="robot">Чем я могу помочь?</div>'
 file = open('chat.html', 'r', encoding='UTF-8')
-html_template = file.read()
+html_chat = file.read()
 file.close()
 
 # Get the html page feature_list
 file = open('feature_list.html', 'r', encoding='UTF-8')
-html_code_2 = file.read()
+feature_list_html = file.read()
 file.close()
 
 
@@ -148,14 +148,14 @@ class ProgramWindow(QMainWindow):
         self.browser2.setGeometry(QtCore.QRect(405, 2, 930, 603))
 
         # Load the html page with the chat into QWebEngineView
-        global html_template
+        global html_chat
         global html_code
-        global html_code_2
+        global feature_list_html
 
-        html_result = html_template.replace('%code%', html_code)
+        html_result = html_chat.replace('%code%', html_code)
         self.browser.setHtml(html_result, QtCore.QUrl("file://"))
         self.browser.show()
-        self.browser2.setHtml(html_code_2, QtCore.QUrl("file://"))
+        self.browser2.setHtml(feature_list_html, QtCore.QUrl("file://"))
         self.browser2.show()  
         self.label.setText("<center><img src='file:///"+os.getcwd() +
                            "/img/img_greetings.jpg'></center>")
@@ -188,6 +188,10 @@ class ProgramWindow(QMainWindow):
                 listen_command()
             elif mouse_button == 2:
                 self.label.setText("<center><img src='file:///"+os.getcwd()+"/img/img_greetings.jpg'></center>")
+                return_menu_html = open('feature_list.html', 'r', encoding='UTF-8')
+                returned_feature_list_html = return_menu_html.read()
+                self.browser2.setHtml(returned_feature_list_html, QtCore.QUrl("feature_list"))
+                return_menu_html.close()
         return super(QMainWindow, self).eventFilter(obj, event)
 
     def picture_change(self, data):
@@ -214,10 +218,10 @@ class ProgramWindow(QMainWindow):
         :param phrase: assistant answer
         :return: nothing, writes assistant answer in the html chat
         """
-        global html_template
+        global html_chat
         global html_code
         html_code = '<div class="robot">' + phrase + '</div>' + html_code
-        html_result = html_template.replace('%code%', html_code)
+        html_result = html_chat.replace('%code%', html_code)
         self.browser.setHtml(html_result, QtCore.QUrl("file://"))
         self.browser.show()
 
@@ -228,10 +232,10 @@ class ProgramWindow(QMainWindow):
         :param phrase: assistant request
         :return: nothing, writes user request in the html chat
         """
-        global html_template
+        global html_chat
         global html_code
         html_code = '<div class="you">' + phrase + '</div>' + html_code
-        html_result = html_template.replace('%code%', html_code)
+        html_result = html_chat.replace('%code%', html_code)
         self.browser.setHtml(html_result, QtCore.QUrl("file://"))
         self.browser.show()
 
@@ -323,6 +327,7 @@ class ProgramWindow(QMainWindow):
 # Run the program
 app = QApplication([])
 window = ProgramWindow()
+
 window.resize(1340, 615)    # Window size
 window.show()
 app.exec_()

@@ -175,7 +175,7 @@ website_data = ['you tube', '0000', '1111']
 #insert_in_database(DATABASE_NAME, TABLE_NAME, website_data)
 #res = get_from_database(DATABASE_NAME, TABLE_NAME, website)
 
-output_authentication_data()
+#output_authentication_data()
 #print("res[0][0]", res[0][0], "\nres[0]", res[0], "\nres", res)
 
 #input_authentication_data()

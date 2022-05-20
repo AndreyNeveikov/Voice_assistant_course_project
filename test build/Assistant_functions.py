@@ -40,6 +40,12 @@ def tell_joke():
 
 
 def assistant_answering_dialogue_phrase(phrase):
+    """
+    Answers user questions
+
+    :param phrase: user question
+    :return: prepared answer
+    """
     answer = 'Пожалуйста, повторите фразу!'
     phrase = clean_phrase(phrase,
                           ['ответь', 'скажи'])

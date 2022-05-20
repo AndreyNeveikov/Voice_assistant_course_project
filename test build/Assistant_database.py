@@ -16,6 +16,12 @@ TABLE_NAME = 'login_details'
 
 
 def create_database(database_name):
+    """
+    Creating a database to store user authentication data
+
+    :param database_name: The name of the database to be created
+    :return: Nothing
+    """
     conn = sqlite3.connect(f'{database_name}')
     curs = conn.cursor()
 
@@ -29,6 +35,14 @@ def create_database(database_name):
 
 
 def insert_in_database(database_name, db_table_name, inserted_data):
+    """
+    Adds user data to the database
+
+    :param database_name: The name of the database
+    :param db_table_name: The name of the table in this database
+    :param inserted_data: User data
+    :return:
+    """
     conn = sqlite3.connect(f'{database_name}')
     curs = conn.cursor()
     insert_template = f'''INSERT INTO {db_table_name} 
@@ -41,6 +55,14 @@ def insert_in_database(database_name, db_table_name, inserted_data):
 
 
 def get_from_database(database_name, db_table_name, requested_website):
+    """
+    Searches the required user data in the database
+
+    :param database_name: The name of the database
+    :param db_table_name: The name of the table in this database
+    :param requested_website: The site for which the data is needed
+    :return: User authentication data
+    """
     conn = sqlite3.connect(f'{database_name}')
     curs = conn.cursor()
     curs.execute(f'''SELECT * FROM {db_table_name}
@@ -52,6 +74,12 @@ def get_from_database(database_name, db_table_name, requested_website):
 
 
 def selecting_database_function(phrase):
+    """
+    Selecting the function of interaction with the database
+
+    :param phrase: User command
+    :return: Function Success Phrase
+    """
     answer = 'Ошибка работы с базой данных'
     phrase = Assistant_functions.clean_phrase(phrase,
                                               ['баз', 'данных'])
@@ -83,6 +111,11 @@ def selecting_database_function(phrase):
 
 
 def output_authentication_data():
+    """
+    Displaying user data in the interface
+
+    :return: Nothing
+    """
     root = Tk()
 
     def btn_click():
@@ -124,6 +157,11 @@ def output_authentication_data():
 
 
 def input_authentication_data():
+    """
+    Displays a window for writing user data
+
+    :return: Nothing
+    """
 
     root = Tk()
 

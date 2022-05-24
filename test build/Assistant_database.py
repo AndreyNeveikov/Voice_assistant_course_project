@@ -1,4 +1,5 @@
 # Interface
+from tkinter import messagebox
 from tkinter import *
 
 # Functional
@@ -6,8 +7,6 @@ import sqlite3
 import os
 
 # Files
-from tkinter import messagebox
-
 import Assistant_functions
 
 
@@ -131,7 +130,7 @@ def output_authentication_data():
     root['bg'] = '#ffffff'
     root.title('Будте осторожны со свой персональной информацией')
     root.wm_attributes('-alpha', 0.99)
-    root.geometry('600x500')
+    root.geometry('400x450')
 
     root.resizable(width=False, height=False)
 
@@ -139,19 +138,18 @@ def output_authentication_data():
     frame.place(relx=0.0, rely=0.0, relwidth=1.0, relheight=1.0)
 
     img_png = PhotoImage(file='img/data_security.png')
-    frame.create_image(300, 300, image=img_png)
+    frame.create_image(200, 250, image=img_png)
 
-    title = Label(frame, text='Непоказывайте эти данные третьим лицам', bg='white', font=40)
-    title.pack()
-
-    btn_exit = Button(frame, text='Выйти', command=root.destroy)
-    btn_exit.pack()
-
-    btn = Button(frame, text='Найти', bg='red', command=btn_click)
-    btn.pack()
+    title = Label(frame, text='Введите нужный ресурс', bg='white', font=40)
+    title.pack(pady=15)
 
     site_input = Entry(frame, bg='white')
-    site_input.pack()
+    btn_find = Button(frame, text='Найти', bg='red', command=btn_click)
+    btn_done = Button(frame, text='Готово', command=root.destroy)
+
+    site_input.pack(side=TOP)
+    btn_find.pack(side=TOP, pady=15)
+    btn_done.pack(side=BOTTOM, pady=30)
 
     root.mainloop()
 
@@ -175,7 +173,7 @@ def input_authentication_data():
     root['bg'] = '#ffffff'
     root.title('Будте осторожны со свой персональной информацией')
     root.wm_attributes('-alpha', 0.99)
-    root.geometry('600x500')
+    root.geometry('400x450')
 
     root.resizable(width=False, height=False)
 
@@ -183,25 +181,37 @@ def input_authentication_data():
     frame.place(relx=0.0, rely=0.0, relwidth=1.0, relheight=1.0)
 
     img_png = PhotoImage(file='img/data_security.png')
-    frame.create_image(300, 300, image=img_png)
+    frame.create_image(200, 270, image=img_png)
 
-    title = Label(frame, text='Непоказывайте эти данные третьим лицам', bg='white', font=40)
+    title = Label(frame, text='Введите данные', bg='white', font=40)
     title.pack()
 
-    btn_exit = Button(frame, text='Выйти', command=root.destroy)
-    btn_exit.pack()#expand=1, anchor=W)
-
-    btn = Button(frame, text='Сохранить', bg='red', command=btn_click)
-    btn.pack()
-
     site_input = Entry(frame, bg='white')
-    site_input.pack()
+    site_input.pack(pady=4)
+
+    user_label_site = Label(bg='white')
+    user_label_site.pack(anchor=NW, padx=25, pady=5)
+
+    user_label_site = Label(text="Название ресурса:", bg="white")
+    user_label_site.pack(anchor=NW, padx=25, pady=1)
 
     login_input = Entry(frame, bg='white')
-    login_input.pack()
+    login_input.pack(pady=3)
+
+    user_label_login = Label(text="Логин:", bg="white")
+    user_label_login.pack(anchor=NW, padx=88, pady=4)
 
     password_input = Entry(frame, bg='white', show='*')
-    password_input.pack()
+    password_input.pack(pady=3)
+
+    user_label_password = Label(text="Пароль:", bg="white")
+    user_label_password.pack(anchor=NW, padx=79, pady=1)
+
+    btn = Button(frame, text='Сохранить', bg='red', command=btn_click)
+    btn.pack(pady=3)
+
+    btn_done = Button(frame, text='Готово', command=root.destroy)
+    btn_done.pack(side=BOTTOM, pady=20)
 
     root.mainloop()
 

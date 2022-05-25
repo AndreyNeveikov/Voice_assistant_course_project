@@ -179,7 +179,7 @@ def start_application(statement):
     return answer
 
 
-def find_on_tube(phrase):
+def find_on_you_tube(phrase):
     """
     Gives link on YouTube video code for any search query
 

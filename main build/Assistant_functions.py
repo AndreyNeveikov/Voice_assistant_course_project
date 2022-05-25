@@ -39,16 +39,19 @@ def tell_joke():
     return joke
 
 
-def write_in_notepad(phrase):
-    pass
-
-
 def assistant_answering_dialogue_phrase(phrase):
-    answer = 'Прожуй и скажи нормально!'
-    phrase = clean_phrase(phrase,
-                          ['кто', 'что', 'как', 'когда', 'зачем', 'сколько', 'какой'])
+    """
+    Answers user questions
 
-    if (phrase.find("тебя") != -1) and (phrase.find("создал") != -1):
+    :param phrase: user question
+    :return: prepared answer
+    """
+    answer = 'Пожалуйста, повторите фразу!'
+    phrase = clean_phrase(phrase,
+                          ['ответь', 'скажи'])
+
+    if (phrase.find("кто"
+                    "") != -1) and (phrase.find("тебя") != -1) and (phrase.find("создал") != -1):
         answer = 'Меня создал Невейков Андрей'
 
     elif (phrase.find("как") != -1) and (phrase.find("тебя") != -1)\
@@ -129,25 +132,25 @@ def start_application(statement):
           or (statement.find("вижуал") != -1)) \
             and ((statement.find("studio") != -1) or (statement.find("студио") != -1)):
         os.startfile("E:\\VS\\Common7\\IDE\\devenv.exe")
-        answer = 'Visual Studio запущен'
+        answer = 'Вижуал студио запущен'
 
     elif ((statement.find("sublime") != -1) or (statement.find("саблайм") != -1)) \
             and ((statement.find("text") != -1) or (statement.find("текст") != -1)):
         os.startfile("E:\\Sublime Text 3\\sublime_text.exe")
-        answer = 'Sublime text запущен'
+        answer = 'Саблайм текст запущен'
 
     elif (statement.find("скайп") != -1) or (statement.find("skype") != -1):
         os.startfile("C:\\Program Files (x86)\\Microsoft\\Skype for Desktop\\Skype.exe")
-        answer = 'Skype запущен'
+        answer = 'Скайп запущен'
 
     elif (statement.find("телеграм") != -1) or (statement.find("telegram") != -1):
         os.startfile("D:\\Telegram\\Telegram Desktop\\Telegram.exe")
-        answer = 'Telegram запущен'
+        answer = 'Телеграмм запущен'
 
     elif (statement.find("гугл") != -1) or (statement.find("гугол") != -1) \
             or (statement.find("google") != -1):
         os.startfile("C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe")
-        answer = 'Google запущен'
+        answer = 'Гугл запущен'
 
     elif (statement.find("калькулятор") != -1) or (statement.find("calculator") != -1):
         os_run('calc')
@@ -159,7 +162,7 @@ def start_application(statement):
 
     elif (statement.find("paint") != -1) or (statement.find("паинт") != -1):
         os_run('mspaint')
-        answer = 'Paint запущен'
+        answer = 'Пэинт запущен'
 
     elif (statement.find("browser") != -1) or (statement.find("браузер") != -1):
         open_url('http://google.ru')
@@ -171,7 +174,7 @@ def start_application(statement):
 
     elif (statement.find("гитхаб") != -1) or (statement.find("github") != -1):
         subprocess.run(['C:\\Users\\User\\AppData\\Local\\GitHubDesktop\\GitHubDesktop.exe'])
-        answer = 'GitHub Desktop запущен'
+        answer = 'Гитхаб запущен'
 
     return answer
 

@@ -247,7 +247,9 @@ class ProgramWindow(QMainWindow):
         :param phrase: written phrase
         :return: nothing
         """
-        Assistant_voice_output_settings.pronounce_assistant_answer(phrase)
+        speaker_list = ['aidar', 'baya', 'kseniya', 'xenia', 'random']
+
+        Assistant_voice_output_settings.Speaker(speaker_list[3]).pronounce_assistant_answer(phrase)
 
     def response_to_user_request(self, data):
         """
@@ -273,7 +275,7 @@ class ProgramWindow(QMainWindow):
                         or ((phrase.find("добавить") != -1) and (phrase.find("данные") != -1))
                         or ((phrase.find("записать") != -1) and (phrase.find("данные") != -1)
                             and (phrase.find("сайта") != -1))):
-                assistant_answer = Assistant_database.selecting_database_function(phrase)
+                assistant_answer = Assistant_database.DatabaseFunctionSelector().selecting_database_function(phrase)
 
             elif (phrase.find("запустить") != -1) or (phrase.find("запусти") != -1):
                 assistant_answer = Assistant_functions.start_application(phrase)
@@ -281,7 +283,7 @@ class ProgramWindow(QMainWindow):
             elif ((phrase.find("youtube") != -1) or (phrase.find("ютюб") != -1) or
                   (phrase.find("ютуб") != -1) or (phrase.find("you tube") != -1))\
                     and (phrase.find("смотреть") != -1):
-                self.browser2.load(QtCore.QUrl(Assistant_functions.find_on_tube(phrase)))
+                self.browser2.load(QtCore.QUrl(Assistant_functions.find_on_you_tube(phrase)))
                 assistant_answer = 'Вот видео.'
 
             elif ((phrase.find("анекдот") != -1) or (phrase.find("шутка") != -1) or
@@ -290,7 +292,7 @@ class ProgramWindow(QMainWindow):
                 assistant_answer = Assistant_functions.tell_joke()
 
             elif (phrase.find("слушать") != -1) and ((phrase.find("песн") != -1) or (phrase.find("песню") != -1)):
-                self.browser2.load(QtCore.QUrl(Assistant_functions.find_on_tube(phrase)))
+                self.browser2.load(QtCore.QUrl(Assistant_functions.find_on_you_tube(phrase)))
                 assistant_answer = 'Вот песня.'
 
             elif ((phrase.find("найти") != -1) or (phrase.find("найди") != -1)) \

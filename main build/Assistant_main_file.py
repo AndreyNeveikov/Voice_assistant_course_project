@@ -7,24 +7,15 @@ from PyQt5.QtGui import QIcon
 # Functional
 import speech_recognition as sr
 import threading
-import pyttsx3
 import signal
 import sys
 import os
 
 # Files
+import Assistant_voice_output_settings
 import Assistant_functions
 import Assistant_database
 
-
-engine = pyttsx3.init()    # Initialize SAPI5
-voices = engine.getProperty('voices')    # Get a list of available votes
-engine.setProperty('voice', 'ru')    # Set the Russian language
-engine.setProperty('rate', 200)    # Set voice speed
-
-for voice in voices:    # Select the desired voice
-    if voice.name == 'Anna':
-        engine.setProperty('voice', voice.id)
 
 # Get the html page for messages in the chat window
 html_code = '<div class="robot">Чем я могу помочь?</div>'
@@ -161,10 +152,10 @@ class ProgramWindow(QMainWindow):
         global html_code
         global feature_list_html
 
-        html_result = html_template.replace('%code%', html_code)
+        html_result = html_chat.replace('%code%', html_code)
         self.browser.setHtml(html_result, QtCore.QUrl("file://"))
         self.browser.show()
-        self.browser2.setHtml(html_code_2, QtCore.QUrl("file://"))
+        self.browser2.setHtml(feature_list_html, QtCore.QUrl("file://"))
         self.browser2.show()  
         self.label.setText("<center><img src='file:///"+os.getcwd() +
                            "/img/img_greetings.jpg'></center>")
@@ -197,6 +188,10 @@ class ProgramWindow(QMainWindow):
                 listen_command()
             elif mouse_button == 2:
                 self.label.setText("<center><img src='file:///"+os.getcwd()+"/img/img_greetings.jpg'></center>")
+                return_menu_html = open('feature_list.html', 'r', encoding='UTF-8')
+                returned_feature_list_html = return_menu_html.read()
+                self.browser2.setHtml(returned_feature_list_html, QtCore.QUrl("feature_list"))
+                return_menu_html.close()
         return super(QMainWindow, self).eventFilter(obj, event)
 
     def picture_change(self, data):
@@ -226,7 +221,7 @@ class ProgramWindow(QMainWindow):
         global html_chat
         global html_code
         html_code = '<div class="robot">' + phrase + '</div>' + html_code
-        html_result = html_template.replace('%code%', html_code)
+        html_result = html_chat.replace('%code%', html_code)
         self.browser.setHtml(html_result, QtCore.QUrl("file://"))
         self.browser.show()
 
@@ -240,22 +235,19 @@ class ProgramWindow(QMainWindow):
         global html_chat
         global html_code
         html_code = '<div class="you">' + phrase + '</div>' + html_code
-        html_result = html_template.replace('%code%', html_code)
+        html_result = html_chat.replace('%code%', html_code)
         self.browser.setHtml(html_result, QtCore.QUrl("file://"))
         self.browser.show()
 
     @staticmethod
     def pronounce_assistant_answer(phrase):
         """
-        Say the phrase aloud with speech synthesis
+        Redirects a phrase to the voiceover function
 
         :param phrase: written phrase
         :return: nothing
         """
-        global engine
-        engine.say(phrase)
-        engine.runAndWait()
-        engine.stop()
+        Assistant_voice_output_settings.pronounce_assistant_answer(phrase)
 
     def response_to_user_request(self, data):
         """
@@ -335,6 +327,7 @@ class ProgramWindow(QMainWindow):
 # Run the program
 app = QApplication([])
 window = ProgramWindow()
+
 window.resize(1340, 615)    # Window size
 window.show()
 app.exec_()

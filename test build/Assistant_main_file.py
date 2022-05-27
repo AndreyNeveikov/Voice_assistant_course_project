@@ -156,7 +156,7 @@ class ProgramWindow(QMainWindow):
         self.browser.setHtml(html_result, QtCore.QUrl("file://"))
         self.browser.show()
         self.browser2.setHtml(feature_list_html, QtCore.QUrl("file://"))
-        self.browser2.show()  
+        self.browser2.show()
         self.label.setText("<center><img src='file:///"+os.getcwd() +
                            "/img/img_greetings.jpg'></center>")
 

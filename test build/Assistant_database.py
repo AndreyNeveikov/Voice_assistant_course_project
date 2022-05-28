@@ -47,6 +47,11 @@ class DatabaseFunctionSelector:
             DatabaseUserInteraction().input_authentication_data()
             answer = """Данные успешно добавлены в базу,\nвы можете просмотреть их с помощью голосовой команды."""
 
+        elif ((phrase.find("удали") != -1) or (phrase.find("удалить") != -1)) \
+                and ((phrase.find("данные") != -1) or (phrase.find("запись") != -1) or (phrase.find("сайт") != -1)):
+            DatabaseUserInteraction().delete_authentication_data()
+            answer = 'Готово! Помните о безопасности ваших персональных данных!!!'
+
         elif ((phrase.find("напомни") != -1) or (phrase.find("какой") != -1)) \
                 and ((phrase.find("пароль") != -1) or (phrase.find("логин") != -1)):
             DatabaseUserInteraction().output_authentication_data()
@@ -90,6 +95,22 @@ class WorkingWithDatabaseUsingSQL:
         (website, login, password) VALUES(?, ?, ?)'''
         curs.execute(insert_template,
                      (f'{inserted_data[0]}', f'{inserted_data[1]}', f'{inserted_data[2]}'))
+        conn.commit()
+        curs.close()
+        conn.close()
+
+    def delete_from_database(self, deleted_data):
+        """
+        Delete user data to the database
+
+        :param deleted_data: User data
+        :return: nothing
+        """
+        print(deleted_data)
+        conn = sqlite3.connect(f'{self.database_name}')
+        curs = conn.cursor()
+        curs.execute(f'''DELETE FROM {self.db_table_name}
+                WHERE website = "{deleted_data}"''')
         conn.commit()
         curs.close()
         conn.close()
@@ -166,6 +187,53 @@ class DatabaseUserInteraction:
 
         self.root.mainloop()
 
+    def delete_authentication_data(self):
+        """
+        Deleting user data by the interface
+
+        :return: Nothing
+        """
+
+        def btn_click():
+            site = str(site_input.get())
+            if len(site) > 0:
+                authentication_data = WorkingWithDatabaseUsingSQL().get_from_database(site)
+                if authentication_data == 0:
+                    messagebox.showerror(title='Запись не найдена',
+                                         message=f'''В базе не существует записи с данным ресурсом''')
+                else:
+                    WorkingWithDatabaseUsingSQL().delete_from_database(site)
+                    messagebox.showwarning(title='Успех!', message=f'''Данные успешно удалены!''')
+            else:
+                messagebox.showerror(title='Поле не заолнено',
+                                     message=f'''Необходимо заполнить поле: "Название ресурса"''')
+
+        self.root['bg'] = '#ffffff'
+        self.root.title('Будте осторожны со свой персональной информацией')
+        self.root.wm_attributes('-alpha', 0.99)
+        self.root.geometry('400x450')
+
+        self.root.resizable(width=False, height=False)
+
+        frame = Canvas(self.root, bg='white')
+        frame.place(relx=0.0, rely=0.0, relwidth=1.0, relheight=1.0)
+
+        img_png = PhotoImage(file='img/data_security.png')
+        frame.create_image(200, 250, image=img_png)
+
+        title = Label(frame, text='Введите нужный ресурс', bg='white', font=40)
+        title.pack(pady=15)
+
+        site_input = Entry(frame, bg='white')
+        btn_find = Button(frame, text='Удалить', bg='red', command=btn_click)
+        btn_done = Button(frame, text='Готово', command=self.root.destroy)
+
+        site_input.pack(side=TOP)
+        btn_find.pack(side=TOP, pady=15)
+        btn_done.pack(side=BOTTOM, pady=30)
+
+        self.root.mainloop()
+
     def input_authentication_data(self):
         """
         Displays a window for writing user data
@@ -185,7 +253,7 @@ class DatabaseUserInteraction:
 
             if len(site) > 0 and len(login) > 3 and len(password) > 3:
                 unique_site_check = WorkingWithDatabaseUsingSQL().get_from_database(site)
-                if len(unique_site_check) == 0:
+                if unique_site_check == 0:
                     WorkingWithDatabaseUsingSQL().insert_in_database([site, login, password])
                 else:
                     messagebox.showerror(title='Ошибка уникальности',
@@ -246,3 +314,10 @@ class DatabaseUserInteraction:
         btn_done.pack(side=BOTTOM, pady=20)
 
         self.root.mainloop()
+
+
+DatabaseUserInteraction().output_authentication_data()
+DatabaseUserInteraction().input_authentication_data()
+DatabaseUserInteraction().delete_authentication_data()
+#WorkingWithDatabaseUsingSQL().delete_from_database('vk')
+DatabaseUserInteraction().output_authentication_data()

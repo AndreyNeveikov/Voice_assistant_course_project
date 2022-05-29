@@ -262,6 +262,7 @@ class DatabaseUserInteraction:
                                 Название: {unique_site_check[0]}
                                 Логин: {unique_site_check[1]}
                                 Пароль: {unique_site_check[2]}''')
+
             else:
                 fields = [site, login, password]
                 fields_names = ['Название ресурса', 'Логин', 'Пароль']
@@ -314,10 +315,3 @@ class DatabaseUserInteraction:
         btn_done.pack(side=BOTTOM, pady=20)
 
         self.root.mainloop()
-
-
-DatabaseUserInteraction().output_authentication_data()
-DatabaseUserInteraction().input_authentication_data()
-DatabaseUserInteraction().delete_authentication_data()
-#WorkingWithDatabaseUsingSQL().delete_from_database('vk')
-DatabaseUserInteraction().output_authentication_data()

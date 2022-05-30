@@ -272,7 +272,7 @@ class ProgramWindow(QMainWindow):
 
         phrase = data[0].lower()    # Get phrase from user
         self.adding_response_to_chat_by_assistant(phrase)   # Display the user's phrases in the chat
-        assistant_answer = 'Я не поняла запрос'    # Default response
+        assistant_answer = 'Я не смогу выполнить запрос'    # Default response
 
         try:
             # Perform an action depending on the presence of keywords in the phrase

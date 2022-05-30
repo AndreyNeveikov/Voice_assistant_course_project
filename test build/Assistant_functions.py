@@ -50,8 +50,7 @@ def assistant_answering_dialogue_phrase(phrase):
     phrase = clean_phrase(phrase,
                           ['ответь', 'скажи'])
 
-    if (phrase.find("кто"
-                    "") != -1) and (phrase.find("тебя") != -1) and (phrase.find("создал") != -1):
+    if (phrase.find("кто") != -1) and (phrase.find("тебя") != -1) and (phrase.find("создал") != -1):
         answer = 'Меня создал Невейков Андрей'
 
     elif (phrase.find("как") != -1) and (phrase.find("тебя") != -1)\

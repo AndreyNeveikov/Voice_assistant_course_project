@@ -139,6 +139,13 @@ class ProgramWindow(QMainWindow):
         self.label.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         # Position the Label inside the window
         self.label.setGeometry(QtCore.QRect(2, 2, 400, 300))
+        self.label.setStyleSheet("QLabel { \n"
+                                 "color: white;\n"
+                                 "background-color: #6c0503;\n"
+                                 "border: 1px solid #000000;\n"
+                                 "border-radius: 0;\n"
+                                 "}\n"
+                                 "\n")
         # Declare the QWebEngineView element to display the html page with the chat
         self.browser = QWebEngineView(self.centralwidget)
         # Declaring the QWebEngineView element to display YouTube videos, texts and web pages
@@ -186,12 +193,14 @@ class ProgramWindow(QMainWindow):
             mouse_button = event.button()
             if mouse_button == 1:
                 listen_command()
+
             elif mouse_button == 2:
                 self.label.setText("<center><img src='file:///"+os.getcwd()+"/img/img_greetings.jpg'></center>")
                 return_menu_html = open('feature_list.html', 'r', encoding='UTF-8')
                 returned_feature_list_html = return_menu_html.read()
                 self.browser2.setHtml(returned_feature_list_html, QtCore.QUrl("feature_list"))
                 return_menu_html.close()
+
         return super(QMainWindow, self).eventFilter(obj, event)
 
     def picture_change(self, data):
@@ -253,7 +262,7 @@ class ProgramWindow(QMainWindow):
 
     def response_to_user_request(self, data):
         """
-        Answer selection function
+        Answer by selection function
 
         :param data: list of keywords
         :return: assistant answer

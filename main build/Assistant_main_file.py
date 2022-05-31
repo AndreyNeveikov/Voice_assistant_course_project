@@ -139,6 +139,13 @@ class ProgramWindow(QMainWindow):
         self.label.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         # Position the Label inside the window
         self.label.setGeometry(QtCore.QRect(2, 2, 400, 300))
+        self.label.setStyleSheet("QLabel { \n"
+                                 "color: white;\n"
+                                 "background-color: #6c0503;\n"
+                                 "border: 1px solid #000000;\n"
+                                 "border-radius: 0;\n"
+                                 "}\n"
+                                 "\n")
         # Declare the QWebEngineView element to display the html page with the chat
         self.browser = QWebEngineView(self.centralwidget)
         # Declaring the QWebEngineView element to display YouTube videos, texts and web pages
@@ -156,7 +163,7 @@ class ProgramWindow(QMainWindow):
         self.browser.setHtml(html_result, QtCore.QUrl("file://"))
         self.browser.show()
         self.browser2.setHtml(feature_list_html, QtCore.QUrl("file://"))
-        self.browser2.show()  
+        self.browser2.show()
         self.label.setText("<center><img src='file:///"+os.getcwd() +
                            "/img/img_greetings.jpg'></center>")
 
@@ -186,12 +193,14 @@ class ProgramWindow(QMainWindow):
             mouse_button = event.button()
             if mouse_button == 1:
                 listen_command()
+
             elif mouse_button == 2:
                 self.label.setText("<center><img src='file:///"+os.getcwd()+"/img/img_greetings.jpg'></center>")
                 return_menu_html = open('feature_list.html', 'r', encoding='UTF-8')
                 returned_feature_list_html = return_menu_html.read()
                 self.browser2.setHtml(returned_feature_list_html, QtCore.QUrl("feature_list"))
                 return_menu_html.close()
+
         return super(QMainWindow, self).eventFilter(obj, event)
 
     def picture_change(self, data):
@@ -247,11 +256,13 @@ class ProgramWindow(QMainWindow):
         :param phrase: written phrase
         :return: nothing
         """
-        Assistant_voice_output_settings.pronounce_assistant_answer(phrase)
+        speaker_list = ['aidar', 'baya', 'kseniya', 'xenia', 'random']
+
+        Assistant_voice_output_settings.Speaker(speaker_list[3]).pronounce_assistant_answer(phrase)
 
     def response_to_user_request(self, data):
         """
-        Answer selection function
+        Answer by selection function
 
         :param data: list of keywords
         :return: assistant answer
@@ -261,7 +272,7 @@ class ProgramWindow(QMainWindow):
 
         phrase = data[0].lower()    # Get phrase from user
         self.adding_response_to_chat_by_assistant(phrase)   # Display the user's phrases in the chat
-        assistant_answer = 'Я не поняла запрос'    # Default response
+        assistant_answer = 'Я не смогу выполнить запрос'    # Default response
 
         try:
             # Perform an action depending on the presence of keywords in the phrase
@@ -273,7 +284,7 @@ class ProgramWindow(QMainWindow):
                         or ((phrase.find("добавить") != -1) and (phrase.find("данные") != -1))
                         or ((phrase.find("записать") != -1) and (phrase.find("данные") != -1)
                             and (phrase.find("сайта") != -1))):
-                assistant_answer = Assistant_database.selecting_database_function(phrase)
+                assistant_answer = Assistant_database.DatabaseFunctionSelector().selecting_database_function(phrase)
 
             elif (phrase.find("запустить") != -1) or (phrase.find("запусти") != -1):
                 assistant_answer = Assistant_functions.start_application(phrase)
@@ -281,7 +292,7 @@ class ProgramWindow(QMainWindow):
             elif ((phrase.find("youtube") != -1) or (phrase.find("ютюб") != -1) or
                   (phrase.find("ютуб") != -1) or (phrase.find("you tube") != -1))\
                     and (phrase.find("смотреть") != -1):
-                self.browser2.load(QtCore.QUrl(Assistant_functions.find_on_tube(phrase)))
+                self.browser2.load(QtCore.QUrl(Assistant_functions.find_on_you_tube(phrase)))
                 assistant_answer = 'Вот видео.'
 
             elif ((phrase.find("анекдот") != -1) or (phrase.find("шутка") != -1) or
@@ -290,7 +301,7 @@ class ProgramWindow(QMainWindow):
                 assistant_answer = Assistant_functions.tell_joke()
 
             elif (phrase.find("слушать") != -1) and ((phrase.find("песн") != -1) or (phrase.find("песню") != -1)):
-                self.browser2.load(QtCore.QUrl(Assistant_functions.find_on_tube(phrase)))
+                self.browser2.load(QtCore.QUrl(Assistant_functions.find_on_you_tube(phrase)))
                 assistant_answer = 'Вот песня.'
 
             elif ((phrase.find("найти") != -1) or (phrase.find("найди") != -1)) \

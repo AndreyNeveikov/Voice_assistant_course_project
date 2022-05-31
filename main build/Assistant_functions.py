@@ -35,7 +35,7 @@ def tell_joke():
     parsed_joke = joke_parser.select('.anekdot_text')
     joke = (parsed_joke[0].getText().strip())
     reg_ex = re.compile('[^0-9a-zA-Zа-яА-я .,!?-]')
-    joke = reg_ex.sub('', joke) 
+    joke = reg_ex.sub('', joke)
     return joke
 
 
@@ -50,8 +50,7 @@ def assistant_answering_dialogue_phrase(phrase):
     phrase = clean_phrase(phrase,
                           ['ответь', 'скажи'])
 
-    if (phrase.find("кто"
-                    "") != -1) and (phrase.find("тебя") != -1) and (phrase.find("создал") != -1):
+    if (phrase.find("кто") != -1) and (phrase.find("тебя") != -1) and (phrase.find("создал") != -1):
         answer = 'Меня создал Невейков Андрей'
 
     elif (phrase.find("как") != -1) and (phrase.find("тебя") != -1)\
@@ -179,7 +178,7 @@ def start_application(statement):
     return answer
 
 
-def find_on_tube(phrase):
+def find_on_you_tube(phrase):
     """
     Gives link on YouTube video code for any search query
 
@@ -193,7 +192,8 @@ def find_on_tube(phrase):
     tmp_list_for_ends_of_links = []
     compound_query = 'http://www.youtube.com/results?search_query='+quote(phrase)
     doc = urllib.request.urlopen(compound_query).read().decode('cp1251', errors='ignore')
-    match = re.findall(r"\?v\=(.+?)\"", doc)
+    match = re.findall(r"\?v=(.+?)\"", doc)
+
     if not(match is None):
         for link_collector in match:
             if len(link_collector) < 25:
@@ -223,7 +223,7 @@ def browser_search(user_request):
     parsed_page = re.compile('title":"(.*?)orig').findall(doc)
     tmp_search_result = []
     search_result = []
-    
+
     for elements in parsed_page:
         if (elements.rfind('wikihow') == -1) and (elements.rfind('an.yandex') == -1)\
                 and (elements.rfind('wikipedia') == -1) and (elements.rfind('otvet.mail.ru') == -1)\

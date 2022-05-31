@@ -106,7 +106,6 @@ class WorkingWithDatabaseUsingSQL:
         :param deleted_data: User data
         :return: nothing
         """
-        print(deleted_data)
         conn = sqlite3.connect(f'{self.database_name}')
         curs = conn.cursor()
         curs.execute(f'''DELETE FROM {self.db_table_name}

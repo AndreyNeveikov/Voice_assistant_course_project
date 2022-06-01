@@ -245,6 +245,7 @@ class ProgramWindow(QMainWindow):
         global html_code
         html_code = '<div class="you">' + phrase + '</div>' + html_code
         html_result = html_chat.replace('%code%', html_code)
+        # Add phrase to the chat
         self.browser.setHtml(html_result, QtCore.QUrl("file://"))
         self.browser.show()
 
@@ -257,7 +258,7 @@ class ProgramWindow(QMainWindow):
         :return: nothing
         """
         speaker_list = ['aidar', 'baya', 'kseniya', 'xenia', 'random']
-
+        # You can choose one of the speakers
         Assistant_voice_output_settings.Speaker(speaker_list[3]).pronounce_assistant_answer(phrase)
 
     def response_to_user_request(self, data):
@@ -279,6 +280,7 @@ class ProgramWindow(QMainWindow):
             if 'ответь' in phrase:
                 assistant_answer = Assistant_functions.assistant_answering_dialogue_phrase(phrase)
 
+            # Redirects to module Assistant_database
             elif ((phrase.find("база") != -1) and (phrase.find("данных") != -1)) \
                     or (((phrase.find("пароль") != -1) or (phrase.find("логин") != -1))
                         or ((phrase.find("добавить") != -1) and (phrase.find("данные") != -1))
@@ -286,24 +288,29 @@ class ProgramWindow(QMainWindow):
                             and (phrase.find("сайта") != -1))):
                 assistant_answer = Assistant_database.DatabaseFunctionSelector().selecting_database_function(phrase)
 
+            # Starts application
             elif (phrase.find("запустить") != -1) or (phrase.find("запусти") != -1):
                 assistant_answer = Assistant_functions.start_application(phrase)
 
+            # Open You Tube video in right side of screen
             elif ((phrase.find("youtube") != -1) or (phrase.find("ютюб") != -1) or
                   (phrase.find("ютуб") != -1) or (phrase.find("you tube") != -1))\
                     and (phrase.find("смотреть") != -1):
                 self.browser2.load(QtCore.QUrl(Assistant_functions.find_on_you_tube(phrase)))
                 assistant_answer = 'Вот видео.'
 
+            # Tells joke
             elif ((phrase.find("анекдот") != -1) or (phrase.find("шутка") != -1) or
                   (phrase.find("анек") != -1) or (phrase.find("прикол") != -1))\
                     or (phrase.find("смешной") != -1):
                 assistant_answer = Assistant_functions.tell_joke()
 
+            # Finds song in internet
             elif (phrase.find("слушать") != -1) and ((phrase.find("песн") != -1) or (phrase.find("песню") != -1)):
                 self.browser2.load(QtCore.QUrl(Assistant_functions.find_on_you_tube(phrase)))
                 assistant_answer = 'Вот песня.'
 
+            # Uses browser to search the request
             elif ((phrase.find("найти") != -1) or (phrase.find("найди") != -1)) \
                     and not(phrase.find("статью") != -1):
                 user_request = Assistant_functions.clean_phrase(phrase,
@@ -312,14 +319,16 @@ class ProgramWindow(QMainWindow):
                 self.browser2.load(QtCore.QUrl(question[0]))
                 assistant_answer = 'Ответ найден'
 
+            # Exit from application
             elif phrase == 'пока' or phrase == 'выход' or phrase == 'выйти' or phrase == 'до свидания':
                 assistant_answer = 'Ещё увидимся!'
                 self.adding_query_to_chat_by_user(assistant_answer)
                 self.pronounce_assistant_answer(assistant_answer)
                 sys.exit(app.exec_())
 
+        # Default response
         except():
-            assistant_answer = 'Я не поняла запрос'    # Default response
+            assistant_answer = 'Я не поняла запрос'
 
         self.adding_query_to_chat_by_user(assistant_answer)    # Add response to the chat
         self.pronounce_assistant_answer(assistant_answer)    # Speak out the answer

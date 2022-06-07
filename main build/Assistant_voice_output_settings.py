@@ -44,5 +44,6 @@ class Speaker:
                                      put_yo=self.put_yo)
 
         sd.play(audio, self.sample_rate * 1.05)
+        # Waiting for assistant to say a phrase
         time.sleep((len(audio) / self.sample_rate) + 0.5)
         sd.stop()

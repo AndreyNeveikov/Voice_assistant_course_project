@@ -50,12 +50,29 @@ def assistant_answering_dialogue_phrase(phrase):
     phrase = clean_phrase(phrase,
                           ['ответь', 'скажи'])
 
-    if (phrase.find("кто") != -1) and (phrase.find("тебя") != -1) and (phrase.find("создал") != -1):
+    if (phrase.find("кто") != -1) and (phrase.find("тебя") != -1) \
+            and (phrase.find("создал") != -1):
         answer = 'Меня создал Невейков Андрей'
+
+    elif (phrase.find("как") != -1) and (phrase.find("дела") != -1):
+        answer = 'Вообще огонь.'
 
     elif (phrase.find("как") != -1) and (phrase.find("тебя") != -1)\
             and (phrase.find("зовут") != -1):
         answer = 'Можете обращаться просто ассистент.'
+
+    elif (phrase.find("о") != -1) and (phrase.find("чём") != -1)\
+            and (phrase.find("ты") != -1) and (phrase.find("мечтаешь") != -1):
+        answer = 'Научиться говорить по-английски.'
+
+    elif (phrase.find("главный") != -1) and (phrase.find("принцип") != -1)\
+            and (phrase.find("твоей") != -1) and (phrase.find("архитектуры") != -1):
+        answer = 'Декомпозиция.'
+
+    elif (phrase.find("что") != -1) and (phrase.find("ты") != -1)\
+            and (phrase.find("умеешь") != -1):
+        answer = '''Я умею открывать приложения, гуглить запросы, рассказывать анекдоты,
+        могу хранить ваши данные для входа на интернет ресурсы, искать музыку в интернете.'''
 
     elif ((phrase.find("сколько") != -1) and (phrase.find("тебе") != -1)
           and (phrase.find("лет") != -1)) or ((phrase.find("твой") != -1)
